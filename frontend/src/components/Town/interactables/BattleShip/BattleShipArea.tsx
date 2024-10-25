@@ -1,10 +1,4 @@
-import {
-  Modal,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/react';
+import { Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractable, useInteractableAreaController } from '../../../../classes/TownController';
@@ -13,9 +7,14 @@ import { InteractableID } from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
-  const gameAreaController = useInteractableAreaController<BattleShipAreaController>(interactableID);
+  const gameAreaController =
+    useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
-  return <p>{gameAreaController.id} {townController.townID}</p>
+  return (
+    <p>
+      {gameAreaController.id} {townController.townID}
+    </p>
+  );
 }
 
 // Most of the below method was taken from IP2.

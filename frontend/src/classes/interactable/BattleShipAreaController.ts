@@ -1,10 +1,4 @@
-import {
-  BattleShipGameState,
-  GameArea,
-  GameMoveCommand,
-  GameStatus,
-} from '../../types/CoveyTownSocket';
-import PlayerController from '../PlayerController';
+import { BattleShipGameState } from '../../types/CoveyTownSocket';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
 
 // These error messages were taken from IP2.
