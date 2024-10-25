@@ -119,6 +119,29 @@ export interface TicTacToeGameState extends WinnableGameState {
   o?: PlayerID;
 }
 
+// BattleShip Types
+
+export type BattleShipGameStatus = 'GAME_WAIT' | 'GAME_START' | 'GAME_MAIN' | 'GAME_END';
+export type BattleShipBoardPiece = 'Destroyer' | 'Submarine' | 'Cruiser' | 'Battleship' | 'Carrier' | undefined;
+export type BattleShipBoardMarker = 'H' | 'M' | undefined;
+export type BattleShipSetupMove = BattleShipBoardPiece[][];
+export interface BattleShipAttackMove {
+  posX: number;
+  posY: number;
+}
+export type BattleShipMove = BattleShipSetupMove | BattleShipAttackMove;
+export interface BattleShipGameState extends WinnableGameState {
+  p1?: PlayerID;
+  p2?: PlayerID;
+  p1InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
+  p2InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
+  p1Board: BattleShipBoardPiece[][];
+  p2Board: BattleShipBoardPiece[][];
+  p1MarkerBoard: BattleShipBoardMarker[][];
+  p2MarkerBoard: BattleShipBoardMarker[][];
+  internalState: BattleShipGameStatus;
+}
+
 export type InteractableID = string;
 export type GameInstanceID = string;
 
