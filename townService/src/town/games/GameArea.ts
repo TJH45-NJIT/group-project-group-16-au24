@@ -37,6 +37,7 @@ export default abstract class GameArea<
     };
   }
 
+  // eslint-disable-next-line class-methods-use-this
   public get isActive(): boolean {
     return true;
   }

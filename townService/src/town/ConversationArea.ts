@@ -82,6 +82,7 @@ export default class ConversationArea extends InteractableArea {
     return new ConversationArea({ id: name, occupants: [] }, rect, broadcastEmitter);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   public handleCommand<
     CommandType extends InteractableCommand,
   >(): InteractableCommandReturnType<CommandType> {
