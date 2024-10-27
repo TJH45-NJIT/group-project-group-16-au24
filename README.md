@@ -45,3 +45,9 @@ Create a `.env` file in the `frontend` directory, with the line: `NEXT_PUBLIC_TO
 
 In the `frontend` directory, run `npm start` (again, you'll need to run `npm install` the very first time). After several moments (or minutes, depending on the speed of your machine), a browser will open with the frontend running locally.
 The frontend will automatically re-compile and reload in your browser if you change any files in the `frontend/src` directory.
+
+# Group 16 Au24 Additional Notes
+
+## Content from IP2
+
+Some content from IP2 was used in this project, mostly for the purpose of being able to use the newer types (such as `Game` and `GameArea`) to help us minimize redundant code. After we asked about whether this is allowed, Peter said that doing so was acceptable so long as we provided attribution to the source of the code snippets. The purpose of this section is to provide that attribution. Contents copied from IP2 can be found in commit `908bf2edec77259dab3eab43da683a203a1d2026`. All changes in that commit are the result of copying files from IP2, and the file paths are the same in both this project and IP2 for the affected files. For other code snippets that are carried over from IP2, comments are left in the source code above the copied snippets as appropriate.
