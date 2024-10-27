@@ -1,3 +1,6 @@
+import InvalidParametersError, {
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
   BattleShipBoardPiece,
@@ -8,6 +11,21 @@ import {
 import Game from './Game';
 
 export default class BattleShipGame extends Game<BattleShipGameState, BattleShipMove> {
+  public constructor() {
+    super({
+      p1: undefined,
+      p2: undefined,
+      p1InitialBoard: [],
+      p2InitialBoard: [],
+      p1Board: [],
+      p2Board: [],
+      p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+      p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+      internalState: 'GAME_WAIT',
+      status: 'WAITING_TO_START',
+    });
+  }
+
   /**
    * Call _setupMove() or _attackMove() based on the kind of move provided. Should parse the relevant information
    * out of the provided argument.
@@ -30,7 +48,33 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param player The player trying to leave.
    */
   protected _leave(player: Player): void {
-    throw new Error(`${this.id} ${player.id} Method not implemented.`);
+    if (this.state.p1 !== player.id && this.state.p2 !== player.id)
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (['GAME_WAIT', 'GAME_START'].includes(this.state.internalState)) {
+      switch (player.id) {
+        case this.state.p1:
+          // Checking to see if P2 exists is unnecessary.
+          this.state.p1 = this.state.p2;
+          this.state.p2 = undefined;
+          break;
+        case this.state.p2:
+          this.state.p2 = undefined;
+          break;
+        default:
+          // This should not ever be the case.
+          break;
+      }
+      if (this.state.internalState === 'GAME_START') {
+        this.state.p1InitialBoard = [];
+        this.state.p2InitialBoard = [];
+        this.state.internalState = 'GAME_WAIT';
+        this._updateExternalState();
+      }
+    } else if (this.state.internalState === 'GAME_MAIN') {
+      this.state.winner = player.id === this.state.p1 ? this.state.p2 : this.state.p1;
+      this.state.internalState = 'GAME_END';
+      this._updateExternalState();
+    }
   }
 
   /**
