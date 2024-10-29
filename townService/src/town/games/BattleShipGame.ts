@@ -83,7 +83,61 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param player The player trying to leave.
    */
   protected _applySetupMove(player: Player, board: BattleShipBoardPiece[][]): void {
-    throw new Error(`${this.id} ${player.id} ${board} Method not implemented.`);
+    if (player.id !== this.state.p1 && player.id !== this.state.p2)
+      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+    const shipSizes = new Map<BattleShipBoardPiece, number>();
+    shipSizes.set('Carrier', 5);
+    shipSizes.set('Battleship', 4);
+    shipSizes.set('Cruiser', 3);
+    shipSizes.set('Submarine', 3);
+    shipSizes.set('Destroyer', 2);
+    const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
+    const missingShips: BattleShipBoardPiece[] = [
+      'Carrier',
+      'Battleship',
+      'Cruiser',
+      'Submarine',
+      'Destroyer',
+    ];
+    for (let x = 0; x < 10; x++)
+      for (let y = 0; y < 10; y++) {
+        // Edge cases:
+        const piece = board[x][y];
+        if (checkedSpots[x][y] !== true && piece !== undefined) {
+          if (!missingShips.includes(piece)) throw new Error(`Duplicate ${piece} found.`);
+          // Upon finding a new ship:
+          if (x + 1 < 10 && board[x + 1][y] === piece) {
+            checkedSpots[x][y] = true;
+            checkedSpots[x + 1][y] = true;
+            const expectedFinalX = x + (shipSizes.get(piece) ?? 0) - 1;
+            if (expectedFinalX >= 10) throw new Error(`Not enough space for ${piece}.`);
+            for (let xNext = x + 2; xNext <= expectedFinalX; xNext++) {
+              if (board[xNext][y] === piece) checkedSpots[xNext][y] = true;
+              else throw new Error(`${piece} is incomplete.`);
+            }
+            missingShips.splice(
+              missingShips.findIndex(value => value === piece),
+              1,
+            );
+          } else if (y + 1 < 10 && board[x][y + 1] === piece) {
+            checkedSpots[x][y] = true;
+            checkedSpots[x][y + 1] = true;
+            const expectedFinalY = y + (shipSizes.get(piece) ?? 0) - 1;
+            if (expectedFinalY >= 10) throw new Error(`Not enough space for ${piece}.`);
+            for (let yNext = y + 2; yNext <= expectedFinalY; yNext++) {
+              if (board[x][yNext] === piece) checkedSpots[x][yNext] = true;
+              else throw new Error(`${piece} is incomplete.`);
+            }
+            missingShips.splice(
+              missingShips.findIndex(value => value === piece),
+              1,
+            );
+          } else throw new Error(`${piece} is incomplete.`);
+        }
+      }
+    if (missingShips.length !== 0) throw new Error(`Missing ship(s): ${missingShips.join()}`);
+    if (player.id === this.state.p1) this.state.p1InitialBoard = board;
+    else this.state.p2InitialBoard = board;
   }
 
   /**
