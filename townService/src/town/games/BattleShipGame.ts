@@ -80,7 +80,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   /**
    * Handle player submission of their board setup during GAME_START and validate that the layout is legal.
    * Transition into GAME_MAIN after both players have submitted. Throw error if the board is not legal.
-   * @param player The player trying to leave.
+   * @param player The player submitting their initial board.
+   * @param board The initial board to be checked and, if legal, recorded.
    */
   protected _applySetupMove(player: Player, board: BattleShipBoardPiece[][]): void {
     if (player.id !== this.state.p1 && player.id !== this.state.p2)
