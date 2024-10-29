@@ -138,6 +138,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       }
     if (missingShips.length !== 0) throw new Error(`Missing ship(s): ${missingShips.join()}`);
     if (player.id === this.state.p1) this.state.p1InitialBoard = board;
+    if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
+      this.state.internalState = 'GAME_MAIN';
+      this._updateExternalState();
+    }
     else this.state.p2InitialBoard = board;
   }
 
