@@ -1,4 +1,9 @@
-import InvalidParametersError, {
+import {
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
@@ -40,7 +45,32 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param player The player trying to join.
    */
   protected _join(player: Player): void {
-    throw new Error(`${this.id} ${player.id} Method not implemented.`);
+    if (this._playerInGame(player)) {
+      throw new Error(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    } else if (this._players.length === 2) {
+      throw new Error(GAME_FULL_MESSAGE);
+    }
+    if (this._players.length === 0) {
+      this.state.p1 = player.id;
+      this.state.status = 'WAITING_TO_START';
+    } else {
+      this.state.p2 = player.id;
+      this.state.status = 'IN_PROGRESS';
+    }
+  }
+
+  /**
+   * Checks if Player is in game list.
+   * @param player The player to join the game
+   * @returns boolean if player is in game
+   */
+  private _playerInGame(player: Player): boolean {
+    for (let i = 0; i < this._players.length; i += 1) {
+      if (this._players[i] === player) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
