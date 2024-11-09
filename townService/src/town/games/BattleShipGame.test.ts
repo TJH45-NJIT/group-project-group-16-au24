@@ -83,11 +83,13 @@ describe('BattleShipGame', () => {
           game.join(player1);
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toBeUndefined();
+          expect(game.state.internalState).toEqual('GAME_WAIT');
           expect(game.state.status).toEqual('WAITING_TO_START');
           expect(game.state.winner).toBeUndefined();
           game.leave(player1);
           expect(game.state.p1).toBeUndefined();
           expect(game.state.p2).toBeUndefined();
+          expect(game.state.internalState).toEqual('GAME_WAIT');
           expect(game.state.status).toEqual('WAITING_TO_START');
           expect(game.state.winner).toBeUndefined();
         });
