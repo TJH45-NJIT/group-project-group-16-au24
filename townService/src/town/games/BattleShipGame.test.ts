@@ -90,7 +90,7 @@ describe('BattleShipGame', () => {
           expect(game.state.p2).toBeUndefined();
           expect(game.state.status).toEqual('WAITING_TO_START');
           expect(game.state.winner).toBeUndefined();
-        })
+        });
       });
       describe('when the game is in the setup stage, it should reset itself to inital parameters', () => {
         test('when p1 leaves', () => {
@@ -127,6 +127,6 @@ describe('BattleShipGame', () => {
         });
       });
     });
-    //TODO: Create _leave tests for after the setup phase is finished, requires complete applyMove
+    // TODO Create _leave tests for after the setup phase is finished, requires complete applyMove
   });
 });
