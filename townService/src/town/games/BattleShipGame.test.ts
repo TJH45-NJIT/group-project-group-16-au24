@@ -102,7 +102,7 @@ describe('BattleShipGame', () => {
           expect(game.state.p2).toEqual(player2.id);
 
           game.leave(player1);
-    
+
           expect(game.state.internalState).toEqual('GAME_WAIT');
           expect(game.state.status).toEqual('WAITING_TO_START');
           expect(game.state.winner).toBeUndefined();
@@ -116,9 +116,9 @@ describe('BattleShipGame', () => {
           game.join(player2);
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toEqual(player2.id);
-    
+
           game.leave(player2);
-    
+
           expect(game.state.internalState).toEqual('GAME_WAIT');
           expect(game.state.status).toEqual('WAITING_TO_START');
           expect(game.state.winner).toBeUndefined();
@@ -127,6 +127,6 @@ describe('BattleShipGame', () => {
         });
       });
     });
-        //TODO: Create _leave tests for after the setup phase is finished, requires complete applyMove
+    //TODO: Create _leave tests for after the setup phase is finished, requires complete applyMove
   });
 });
