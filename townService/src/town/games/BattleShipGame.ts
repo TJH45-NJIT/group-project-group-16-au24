@@ -52,6 +52,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     }
     if (this._players.length === 0) {
       this.state.p1 = player.id;
+      this.state.internalState = 'GAME_WAIT';
+      this._updateExternalState();
     } else {
       this.state.p2 = player.id;
       this.state.internalState = 'GAME_START';
