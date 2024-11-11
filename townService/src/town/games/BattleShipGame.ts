@@ -26,6 +26,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       p2Board: [],
       p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
       p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+      p1SunkenShips: [],
+      p2SunkenShips: [],
       turnPlayer: undefined,
       internalState: 'GAME_WAIT',
       status: 'WAITING_TO_START',

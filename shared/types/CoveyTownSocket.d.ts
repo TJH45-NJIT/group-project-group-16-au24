@@ -117,6 +117,8 @@ export interface BattleShipGameState extends WinnableGameState {
   p2Board: BattleShipBoardPiece[][];
   p1MarkerBoard: BattleShipBoardMarker[][];
   p2MarkerBoard: BattleShipBoardMarker[][];
+  p1SunkenShips: BattleShipBoardPiece[];
+  p2SunkenShips: BattleShipBoardPiece[];
   turnPlayer?: PlayerID;
   internalState: BattleShipGameStatus;
 }
