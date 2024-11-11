@@ -36,7 +36,7 @@ export default function BattleShipAreaWrapper(): JSX.Element {
 
   if (gameArea && gameArea.getData('type') === 'BattleShip') {
     return (
-      <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false}>
+      <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false} size='6xl'>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{gameArea.name}</ModalHeader>
