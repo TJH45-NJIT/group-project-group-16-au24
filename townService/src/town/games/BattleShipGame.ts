@@ -151,16 +151,24 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       const hitShip: BattleShipBoardPiece = shipBoard[posX][posY];
       shipBoard[posX][posY] = undefined;
       let shipHasSunk = true;
-      for (const [x, y] of [
-        [posX, posY + 1],
-        [posX + 1, posY],
-        [posX, posY - 1],
-        [posX - 1, posY],
-      ])
-        if (x >= 0 && x <= 9 && y >= 0 && y <= 9 && shipBoard[x][y] === hitShip) {
-          shipHasSunk = false;
-          break;
-        }
+      let noShipsRemaining = true;
+      for (let x = 0; x < 10; x++) {
+        if (!shipHasSunk) break;
+        for (let y = 0; y < 10; y++)
+          if (shipBoard[x][y] === hitShip) {
+            shipHasSunk = false;
+            noShipsRemaining = false;
+            break;
+          } else if (shipBoard[x][y] !== undefined) noShipsRemaining = false;
+      }
+      if (shipHasSunk) {
+        // TODO: send a notification to both players about the ship sinking
+      }
+      if (noShipsRemaining) {
+        this.state.winner = player.id;
+        this.state.internalState = 'GAME_END';
+        this._updateExternalState();
+      } else this.state.turnPlayer = opponentId;
     }
   }
 
