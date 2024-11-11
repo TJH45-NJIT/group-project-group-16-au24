@@ -124,8 +124,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   /**
    * Handle an attack that a player makes on their turn during GAME_MAIN, announcing whether it was a hit or
    * miss. The hit/miss should be marked on the marker board for the defending player. If a hit results in
-   * completely destroying a ship, this should also be announced. Notify clients to change view to the order
-   * board if there is a next turn. Transition into GAME_END if the game ends as a result of a player losing
+   * completely destroying a ship, this should also be announced. The turn player should change if the move
+   * doesn't cause the game to end. Transition into GAME_END if the game ends as a result of a player losing
    * all ships.
    * @param player The player making the move.
    * @param posX The index of the "row" that corresponds to the attacked position.
@@ -143,14 +143,14 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
     const shipBoard = player.id === this.state.p1 ? this.state.p2Board : this.state.p1Board;
     const opponentId = player.id === this.state.p1 ? this.state.p2 : this.state.p1;
-    if (shipBoard[posX][posY] === undefined) {
+    const hitShip = shipBoard[posX][posY];
+    if (hitShip === undefined) {
       // When the shot misses
       markerBoard[posX][posY] = 'M';
       this.state.turnPlayer = opponentId;
     } else {
       // When the shot hits
       markerBoard[posX][posY] = 'H';
-      const hitShip: BattleShipBoardPiece = shipBoard[posX][posY];
       shipBoard[posX][posY] = undefined;
       let shipHasSunk = true;
       let noShipsRemaining = true;
@@ -164,7 +164,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
           } else if (shipBoard[x][y] !== undefined) noShipsRemaining = false;
       }
       if (shipHasSunk) {
-        // TODO: send a notification to both players about the ship sinking
+        if (opponentId === this.state.p1) this.state.p1SunkenShips.push(hitShip);
+        else this.state.p2SunkenShips.push(hitShip);
       }
       if (noShipsRemaining) {
         this.state.winner = player.id;
