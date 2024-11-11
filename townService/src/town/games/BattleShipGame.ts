@@ -130,7 +130,38 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param posY The index of the "column" that corresponds to the attacked position.
    */
   protected _applyAttackMove(player: Player, posX: number, posY: number): void {
-    throw new Error(`${this.id} ${player.id} ${posX} ${posY} Method not implemented.`);
+    if (player.id !== this.state.p1 && player.id !== this.state.p2)
+      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (this.state.internalState !== 'GAME_MAIN') throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (player.id !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
+    for (const pos of [posX, posY])
+      if (pos < 0 || pos > 9) throw new Error("Targeted position out of the board's range");
+    const markerBoard =
+      player.id === this.state.p1 ? this.state.p2MarkerBoard : this.state.p1MarkerBoard;
+    if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+    const shipBoard = player.id === this.state.p1 ? this.state.p2Board : this.state.p1Board;
+    const opponentId = player.id === this.state.p1 ? this.state.p2 : this.state.p1;
+    if (shipBoard[posX][posY] === undefined) {
+      // When the shot misses
+      markerBoard[posX][posY] = 'M';
+      this.state.turnPlayer = opponentId;
+    } else {
+      // When the shot hits
+      markerBoard[posX][posY] = 'H';
+      const hitShip: BattleShipBoardPiece = shipBoard[posX][posY];
+      shipBoard[posX][posY] = undefined;
+      let shipHasSunk = true;
+      for (const [x, y] of [
+        [posX, posY + 1],
+        [posX + 1, posY],
+        [posX, posY - 1],
+        [posX - 1, posY],
+      ])
+        if (x >= 0 && x <= 9 && y >= 0 && y <= 9 && shipBoard[x][y] === hitShip) {
+          shipHasSunk = false;
+          break;
+        }
+    }
   }
 
   /**
