@@ -17,6 +17,7 @@ export const BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE = 'Not enough space 
 export const BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE = 'Incomplete %s';
 /**
  * Multiple ships separated by @see BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR
+ * ordered the same way as in the @see BattleShipBoardPiece declaration
  */
 export const BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE = 'Missing ship(s): %s';
 export const BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR = ', ';

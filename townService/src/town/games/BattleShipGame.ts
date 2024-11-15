@@ -95,15 +95,14 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
     const missingShips: BattleShipBoardPiece[] = [
-      'Carrier',
-      'Battleship',
-      'Cruiser',
-      'Submarine',
       'Destroyer',
+      'Submarine',
+      'Cruiser',
+      'Battleship',
+      'Carrier',
     ];
     for (let x = 0; x < 10; x++)
       for (let y = 0; y < 10; y++) {
-        // Edge cases:
         const piece = board[x][y];
         if (checkedSpots[x][y] !== true && piece !== undefined) {
           if (!missingShips.includes(piece))
