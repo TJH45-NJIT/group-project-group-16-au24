@@ -124,7 +124,14 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     throw new Error(`${this.id} ${player.id} ${board} Method not implemented.`);
   }
 
-  private static _detectSunkenShips(
+  /**
+   * Detect if a given ship has sunk on a given board, and add that ship to the given
+   * sunken ships array if it did.
+   * @param shipBoard The board to scan for the given ship
+   * @param hitShip The ship for which to scan
+   * @param sunkenShips The array to update if the given ship has sunk
+   */
+  private static _detectSunkenShip(
     shipBoard: BattleShipBoardPiece[][],
     hitShip: BattleShipBoardPiece,
     sunkenShips: BattleShipBoardPiece[],
@@ -178,7 +185,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       // When the shot hits
       markerBoard[posX][posY] = 'H';
       shipBoard[posX][posY] = undefined;
-      BattleShipGame._detectSunkenShips(shipBoard, hitShip, sunkenShips);
+      BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
         // When the game is won
         this.state.winner = player.id;
