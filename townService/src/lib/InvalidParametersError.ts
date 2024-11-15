@@ -11,6 +11,16 @@ export const MOVE_NOT_YOUR_TURN_MESSAGE = 'Not your turn';
 
 export const PLAYER_NOT_IN_GAME_MESSAGE = 'Player is not in this game';
 export const PLAYER_ALREADY_IN_GAME_MESSAGE = 'Player is already in this game';
+
+export const BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE = 'Duplicate %s found';
+export const BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE = 'Not enough space for %s';
+export const BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE = 'Incomplete %s';
+/**
+ * Multiple ships separated by @see BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR
+ */
+export const BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE = 'Missing ship(s): %s';
+export const BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR = ', ';
+
 export default class InvalidParametersError extends Error {
   public message: string;
 

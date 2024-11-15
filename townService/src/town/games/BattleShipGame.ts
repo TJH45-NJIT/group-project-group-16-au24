@@ -1,4 +1,10 @@
+import util from 'node:util';
 import InvalidParametersError, {
+  BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
+  BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
@@ -105,16 +111,18 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
         // Edge cases:
         const piece = board[x][y];
         if (checkedSpots[x][y] !== true && piece !== undefined) {
-          if (!missingShips.includes(piece)) throw new Error(`Duplicate ${piece} found.`);
+          if (!missingShips.includes(piece))
+            throw new Error(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, piece));
           // Upon finding a new ship:
           if (x + 1 < 10 && board[x + 1][y] === piece) {
             checkedSpots[x][y] = true;
             checkedSpots[x + 1][y] = true;
             const expectedFinalX = x + (shipSizes.get(piece) ?? 0) - 1;
-            if (expectedFinalX >= 10) throw new Error(`Not enough space for ${piece}.`);
+            if (expectedFinalX >= 10)
+              throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
             for (let xNext = x + 2; xNext <= expectedFinalX; xNext++) {
               if (board[xNext][y] === piece) checkedSpots[xNext][y] = true;
-              else throw new Error(`${piece} is incomplete.`);
+              else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
             }
             missingShips.splice(
               missingShips.findIndex(value => value === piece),
@@ -124,19 +132,26 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
             checkedSpots[x][y] = true;
             checkedSpots[x][y + 1] = true;
             const expectedFinalY = y + (shipSizes.get(piece) ?? 0) - 1;
-            if (expectedFinalY >= 10) throw new Error(`Not enough space for ${piece}.`);
+            if (expectedFinalY >= 10)
+              throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
             for (let yNext = y + 2; yNext <= expectedFinalY; yNext++) {
               if (board[x][yNext] === piece) checkedSpots[x][yNext] = true;
-              else throw new Error(`${piece} is incomplete.`);
+              else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
             }
             missingShips.splice(
               missingShips.findIndex(value => value === piece),
               1,
             );
-          } else throw new Error(`${piece} is incomplete.`);
+          } else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
         }
       }
-    if (missingShips.length !== 0) throw new Error(`Missing ship(s): ${missingShips.join()}`);
+    if (missingShips.length !== 0)
+      throw new Error(
+        util.format(
+          BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+          missingShips.join(BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR),
+        ),
+      );
     if (player.id === this.state.p1) this.state.p1InitialBoard = board;
     if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
       this.state.internalState = 'GAME_MAIN';
