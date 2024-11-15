@@ -8,11 +8,13 @@ import InvalidParametersError, {
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  BattleShipBoardMarker,
   BattleShipBoardPiece,
   BattleShipGameState,
   BattleShipGridPosition,
   BattleShipMove,
   GameMove,
+  PlayerID,
 } from '../../types/CoveyTownSocket';
 import Game from './Game';
 
@@ -151,11 +153,22 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     if (this.state.internalState !== 'GAME_MAIN') throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
     if (player.id !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
-    const markerBoard =
-      player.id === this.state.p1 ? this.state.p2MarkerBoard : this.state.p1MarkerBoard;
+    let shipBoard: BattleShipBoardPiece[][];
+    let markerBoard: BattleShipBoardMarker[][];
+    let opponentId: PlayerID | undefined;
+    let sunkenShips: BattleShipBoardPiece[];
+    if (player.id === this.state.p1) {
+      shipBoard = this.state.p2Board;
+      markerBoard = this.state.p2MarkerBoard;
+      opponentId = this.state.p2;
+      sunkenShips = this.state.p2SunkenShips;
+    } else {
+      shipBoard = this.state.p1Board;
+      opponentId = this.state.p1;
+      markerBoard = this.state.p1MarkerBoard;
+      sunkenShips = this.state.p1SunkenShips;
+    }
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
-    const shipBoard = player.id === this.state.p1 ? this.state.p2Board : this.state.p1Board;
-    const opponentId = player.id === this.state.p1 ? this.state.p2 : this.state.p1;
     const hitShip = shipBoard[posX][posY];
     if (hitShip === undefined) {
       // When the shot misses
@@ -165,10 +178,9 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       // When the shot hits
       markerBoard[posX][posY] = 'H';
       shipBoard[posX][posY] = undefined;
-      const sunkenShips =
-        opponentId === this.state.p1 ? this.state.p1SunkenShips : this.state.p2SunkenShips;
       BattleShipGame._detectSunkenShips(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
+        // When the game is won
         this.state.winner = player.id;
         this.state.internalState = 'GAME_END';
         this._updateExternalState();
