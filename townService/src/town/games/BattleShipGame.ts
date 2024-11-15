@@ -10,6 +10,7 @@ import Player from '../../lib/Player';
 import {
   BattleShipBoardPiece,
   BattleShipGameState,
+  BattleShipGridPosition,
   BattleShipMove,
   GameMove,
 } from '../../types/CoveyTownSocket';
@@ -121,6 +122,16 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     throw new Error(`${this.id} ${player.id} ${board} Method not implemented.`);
   }
 
+  private static _detectSunkenShips(
+    shipBoard: BattleShipBoardPiece[][],
+    hitShip: BattleShipBoardPiece,
+    sunkenShips: BattleShipBoardPiece[],
+  ): void {
+    for (let x = 0; x < 10; x++)
+      for (let y = 0; y < 10; y++) if (shipBoard[x][y] === hitShip) return;
+    sunkenShips.push(hitShip);
+  }
+
   /**
    * Handle an attack that a player makes on their turn during GAME_MAIN, announcing whether it was a hit or
    * miss. The hit/miss should be marked on the marker board for the defending player. If a hit results in
@@ -131,13 +142,15 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param posX The index of the "row" that corresponds to the attacked position.
    * @param posY The index of the "column" that corresponds to the attacked position.
    */
-  protected _applyAttackMove(player: Player, posX: number, posY: number): void {
+  protected _applyAttackMove(
+    player: Player,
+    posX: BattleShipGridPosition,
+    posY: BattleShipGridPosition,
+  ): void {
     if (player.id !== this.state.p1 && player.id !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     if (this.state.internalState !== 'GAME_MAIN') throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
     if (player.id !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
-    for (const pos of [posX, posY])
-      if (pos < 0 || pos > 9) throw new Error("Targeted position out of the board's range");
     const markerBoard =
       player.id === this.state.p1 ? this.state.p2MarkerBoard : this.state.p1MarkerBoard;
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
@@ -152,22 +165,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       // When the shot hits
       markerBoard[posX][posY] = 'H';
       shipBoard[posX][posY] = undefined;
-      let shipHasSunk = true;
-      let noShipsRemaining = true;
-      for (let x = 0; x < 10; x++) {
-        if (!shipHasSunk) break;
-        for (let y = 0; y < 10; y++)
-          if (shipBoard[x][y] === hitShip) {
-            shipHasSunk = false;
-            noShipsRemaining = false;
-            break;
-          } else if (shipBoard[x][y] !== undefined) noShipsRemaining = false;
-      }
-      if (shipHasSunk) {
-        if (opponentId === this.state.p1) this.state.p1SunkenShips.push(hitShip);
-        else this.state.p2SunkenShips.push(hitShip);
-      }
-      if (noShipsRemaining) {
+      const sunkenShips =
+        opponentId === this.state.p1 ? this.state.p1SunkenShips : this.state.p2SunkenShips;
+      BattleShipGame._detectSunkenShips(shipBoard, hitShip, sunkenShips);
+      if (sunkenShips.length === 5) {
         this.state.winner = player.id;
         this.state.internalState = 'GAME_END';
         this._updateExternalState();
