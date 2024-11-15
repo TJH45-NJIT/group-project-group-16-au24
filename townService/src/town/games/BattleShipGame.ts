@@ -12,6 +12,7 @@ import {
   BattleShipBoardPiece,
   BattleShipGameState,
   BattleShipMove,
+  BATTLESHIP_SHIP_SIZES,
   GameMove,
 } from '../../types/CoveyTownSocket';
 import Game from './Game';
@@ -92,12 +93,6 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   protected _applySetupMove(player: Player, board: BattleShipBoardPiece[][]): void {
     if (player.id !== this.state.p1 && player.id !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
-    const shipSizes = new Map<BattleShipBoardPiece, number>();
-    shipSizes.set('Carrier', 5);
-    shipSizes.set('Battleship', 4);
-    shipSizes.set('Cruiser', 3);
-    shipSizes.set('Submarine', 3);
-    shipSizes.set('Destroyer', 2);
     const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
     const missingShips: BattleShipBoardPiece[] = [
       'Carrier',
@@ -117,7 +112,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
           if (x + 1 < 10 && board[x + 1][y] === piece) {
             checkedSpots[x][y] = true;
             checkedSpots[x + 1][y] = true;
-            const expectedFinalX = x + (shipSizes.get(piece) ?? 0) - 1;
+            const expectedFinalX = x + (BATTLESHIP_SHIP_SIZES.get(piece) ?? 0) - 1;
             if (expectedFinalX >= 10)
               throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
             for (let xNext = x + 2; xNext <= expectedFinalX; xNext++) {
@@ -131,7 +126,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
           } else if (y + 1 < 10 && board[x][y + 1] === piece) {
             checkedSpots[x][y] = true;
             checkedSpots[x][y + 1] = true;
-            const expectedFinalY = y + (shipSizes.get(piece) ?? 0) - 1;
+            const expectedFinalY = y + (BATTLESHIP_SHIP_SIZES.get(piece) ?? 0) - 1;
             if (expectedFinalY >= 10)
               throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
             for (let yNext = y + 2; yNext <= expectedFinalY; yNext++) {
