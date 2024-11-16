@@ -17,7 +17,6 @@ import {
   BattleShipBoardPiece,
   BattleShipGameState,
   BattleShipMove,
-  BATTLESHIP_SHIP_SIZES,
   GameMove,
 } from '../../types/CoveyTownSocket';
 import Game from './Game';
@@ -136,10 +135,17 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     y: number,
     isXAxis: boolean,
   ): void {
+    const shipSizes = new Map<BattleShipBoardPiece, number>([
+      ['Destroyer', 2],
+      ['Submarine', 3],
+      ['Cruiser', 3],
+      ['Battleship', 4],
+      ['Carrier', 5],
+    ]);
     checkedSpots[x][y] = true;
     if (isXAxis) checkedSpots[x + 1][y] = true;
     else checkedSpots[x][y + 1] = true;
-    const finalSpot = (isXAxis ? x : y) + (BATTLESHIP_SHIP_SIZES.get(piece) ?? 0) - 1;
+    const finalSpot = (isXAxis ? x : y) + (shipSizes.get(piece) ?? 0) - 1;
     if (finalSpot >= 10)
       throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
     if (isXAxis)
