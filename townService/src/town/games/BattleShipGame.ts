@@ -5,6 +5,11 @@ import InvalidParametersError, {
   BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
   BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
   BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
@@ -47,7 +52,34 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param player The player trying to join.
    */
   protected _join(player: Player): void {
-    throw new Error(`${this.id} ${player.id} Method not implemented.`);
+    if (this._playerInGame(player)) {
+      throw new Error(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    } else if (this._players.length === 2) {
+      throw new Error(GAME_FULL_MESSAGE);
+    }
+    if (this._players.length === 0) {
+      this.state.p1 = player.id;
+      this.state.internalState = 'GAME_WAIT';
+      this._updateExternalState();
+    } else {
+      this.state.p2 = player.id;
+      this.state.internalState = 'GAME_START';
+      this._updateExternalState();
+    }
+  }
+
+  /**
+   * Checks if Player is in game list.
+   * @param player The player to join the game
+   * @returns boolean if player is in game
+   */
+  private _playerInGame(player: Player): boolean {
+    for (let i = 0; i < this._players.length; i += 1) {
+      if (this._players[i] === player) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -189,9 +221,25 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * Update state.status based on the current value of status.internalState. This allows the more complicated
    * state transitions to exist within the implementation but still conform to the primary game interface in
    * Covey.Town.
+   * External States:'IN_PROGRESS', 'WAITING_TO_START', 'OVER'
+   * Internal States:'GAME_WAIT', 'GAME_START', 'GAME_MAIN', 'GAME_END', possibly additional for SALVO
    */
   protected _updateExternalState(): void {
-    throw new Error(`${this.id} Method not implemented.`);
+    switch (this.state.internalState) {
+      case 'GAME_WAIT':
+        this.state.status = 'WAITING_TO_START';
+        break;
+      case 'GAME_START':
+      case 'GAME_MAIN':
+        this.state.status = 'IN_PROGRESS';
+        break;
+      case 'GAME_END':
+        this.state.status = 'OVER';
+        break;
+      default:
+        // This should not ever be the case as of now.
+        break;
+    }
   }
 
   /**
