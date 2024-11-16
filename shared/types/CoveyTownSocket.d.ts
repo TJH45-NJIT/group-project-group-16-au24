@@ -101,13 +101,6 @@ export interface GameMove<MoveType> {
 
 export type BattleShipGameStatus = 'GAME_WAIT' | 'GAME_START' | 'GAME_MAIN' | 'GAME_END';
 export type BattleShipBoardPiece = 'Destroyer' | 'Submarine' | 'Cruiser' | 'Battleship' | 'Carrier' | undefined;
-export const BATTLESHIP_SHIP_SIZES = new Map<BattleShipBoardPiece, number>([
-  ['Destroyer', 2],
-  ['Submarine', 3],
-  ['Cruiser', 3],
-  ['Battleship', 4],
-  ['Carrier', 5],
-]);
 export type BattleShipBoardMarker = 'H' | 'M' | undefined;
 export type BattleShipSetupMove = BattleShipBoardPiece[][];
 export interface BattleShipAttackMove {
