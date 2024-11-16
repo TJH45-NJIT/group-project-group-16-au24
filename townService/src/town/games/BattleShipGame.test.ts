@@ -1,15 +1,10 @@
 import { createPlayerForTesting } from '../../TestUtils';
 import {
-  BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
-  GAME_NOT_IN_PROGRESS_MESSAGE,
-  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import BattleShipGame from './BattleShipGame';
-import Player from '../../lib/Player';
-import { BattleShipMove } from '../../types/CoveyTownSocket';
 
 describe('BattleShipGame', () => {
   let game: BattleShipGame;
