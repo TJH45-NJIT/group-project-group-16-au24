@@ -36,9 +36,9 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    */
   public applyMove(move: GameMove<BattleShipMove>): void {
     if (Array.isArray(move.move)) {
-      this._applySetupMove(move.playerID,move.move);
-    }else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
-      this._applyAttackMove(move.playerID,move.move.posX,move.move.posY);
+      this._applySetupMove(move.playerID, move.move);
+    } else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
+      this._applyAttackMove(move.playerID, move.move.posX, move.move.posY);
     }
   }
 
