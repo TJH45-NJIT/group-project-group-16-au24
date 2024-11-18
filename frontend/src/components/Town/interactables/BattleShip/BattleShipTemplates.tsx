@@ -1,12 +1,70 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button, Center, Table, Td, Tr, useToast } from '@chakra-ui/react';
-import React from 'react';
+import React, { useState } from 'react';
+import { BattleShipBoardMarker, BattleShipBoardPiece } from '../../../../types/CoveyTownSocket';
 import { BattleShipBoard } from './BattleShipBoard';
 
 // This file is a collection of templates I created for the "Wizard of Oz" demo, and I think we can reuse a good amount
 // of this in the final version of the project. This file should be *DELETED* by the time the project is finished, with
 // all of its components either moved/modified somewhere else or deleted. If any of these templates are used, their
 // skeletons should definitely be heavily modified due to how much repetition there is.
+
+export function SampleBoard(): JSX.Element {
+  // Note that these sample arrays are not going to render on the board the same way they visually appear in this array.
+  // The actual arrays are arrays of arrays corresponding to the same column, but the visual representation of these
+  // arrays *looks like* rows of rows when read left-to-right, which is not how the arrays are interpreted. As such, the
+  // resulting board will *look like* the transpose of these arrays even though the arrays and board are indeed consistent.
+  const [initialBoard] = useState<BattleShipBoardPiece[][]>([
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    'Carrier',    undefined,    undefined,    undefined,  'Submarine',  'Submarine',  'Submarine',    undefined,  'Destroyer' ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [ 'Battleship', 'Battleship', 'Battleship', 'Battleship',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+  ]);
+  const [markerBoard] = useState<BattleShipBoardMarker[][]>([
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,          'H',    undefined,    undefined,    undefined,          'H' ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,          'M',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,          'M',    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,          'H',    undefined,          'M',    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [          'M',    undefined,    undefined,    undefined,          'M',    undefined,          'H',    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,          'H',    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+    // eslint-disable-next-line prettier/prettier
+    [    undefined,    undefined,          'H',          'H',          'M',    undefined,    undefined,    undefined,    undefined,          'M' ],
+    // eslint-disable-next-line prettier/prettier
+    [          'M',    undefined,    undefined,    undefined,    undefined,    undefined,          'M',    undefined,    undefined,    undefined ],
+  ]);
+  return (
+    <BattleShipBoard
+      initialBoard={initialBoard}
+      displayInitialBoard={true}
+      markerBoard={markerBoard}></BattleShipBoard>
+  );
+}
 
 function HistoryView(): JSX.Element {
   return (
