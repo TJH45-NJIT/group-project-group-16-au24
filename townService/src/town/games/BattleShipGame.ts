@@ -9,6 +9,7 @@ import {
   BattleShipGameState,
   BattleShipMove,
   GameMove,
+  PlayerID,
 } from '../../types/CoveyTownSocket';
 import Game from './Game';
 
@@ -29,12 +30,16 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   }
 
   /**
-   * Call _setupMove() or _attackMove() based on the kind of move provided. Should parse the relevant information
+   * Call _applySetupMove() or _applyAttackMove() based on the kind of move provided. Should parse the relevant information
    * out of the provided argument.
    * @param move The provided move to process.
    */
   public applyMove(move: GameMove<BattleShipMove>): void {
-    throw new Error(`${this.id} ${move.playerID} Method not implemented.`);
+    if (Array.isArray(move.move)) {
+      this._applySetupMove(move.playerID,move.move);
+    }else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
+      this._applyAttackMove(move.playerID,move.move.posX,move.move.posY);
+    }
   }
 
   /**
@@ -111,8 +116,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * Transition into GAME_MAIN after both players have submitted. Throw error if the board is not legal.
    * @param player The player trying to leave.
    */
-  protected _applySetupMove(player: Player, board: BattleShipBoardPiece[][]): void {
-    throw new Error(`${this.id} ${player.id} ${board} Method not implemented.`);
+  protected _applySetupMove(playerID: PlayerID, board: BattleShipBoardPiece[][]): void {
+    throw new Error(`${this.id} ${playerID} ${board} Method not implemented.`);
   }
 
   /**
@@ -125,8 +130,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param posX The index of the "row" that corresponds to the attacked position.
    * @param posY The index of the "column" that corresponds to the attacked position.
    */
-  protected _applyAttackMove(player: Player, posX: number, posY: number): void {
-    throw new Error(`${this.id} ${player.id} ${posX} ${posY} Method not implemented.`);
+  protected _applyAttackMove(playerID: PlayerID, posX: number, posY: number): void {
+    throw new Error(`${this.id} ${playerID} ${posX} ${posY} Method not implemented.`);
   }
 
   /**
