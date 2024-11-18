@@ -116,10 +116,16 @@ function InMainGameView(): JSX.Element {
         </Tr>
         <Tr>
           <Td borderWidth={0} borderRightWidth={5} borderColor={'black'}>
-            <BattleShipBoard></BattleShipBoard>
+            <BattleShipBoard
+              initialBoard={[]}
+              displayInitialBoard={false}
+              markerBoard={[]}></BattleShipBoard>
           </Td>
           <Td borderWidth={0} borderLeftWidth={5} borderColor={'black'}>
-            <BattleShipBoard></BattleShipBoard>
+            <BattleShipBoard
+              initialBoard={[]}
+              displayInitialBoard={false}
+              markerBoard={[]}></BattleShipBoard>
           </Td>
         </Tr>
         <Tr>
@@ -183,7 +189,10 @@ function InitialGameView(): JSX.Element {
 function BoardSetupView(): JSX.Element {
   return (
     <div>
-      <BattleShipBoard></BattleShipBoard>
+      <BattleShipBoard
+        initialBoard={[]}
+        displayInitialBoard={false}
+        markerBoard={[]}></BattleShipBoard>
       <br />
       <p style={{ textAlign: 'center' }}>
         Click and drag your ships to where you want them to be placed.
