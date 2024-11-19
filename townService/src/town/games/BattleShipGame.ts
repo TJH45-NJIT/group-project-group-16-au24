@@ -147,31 +147,31 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * completely destroying a ship, this should also be announced. The turn player should change if the move
    * doesn't cause the game to end. Transition into GAME_END if the game ends as a result of a player losing
    * all ships.
-   * @param player The player making the move.
+   * @param playerID The ID of the player making the move.
    * @param posX The index of the "row" that corresponds to the attacked position.
    * @param posY The index of the "column" that corresponds to the attacked position.
    */
   protected _applyAttackMove(
-    player: Player,
+    playerID: PlayerID,
     posX: BattleShipGridPosition,
     posY: BattleShipGridPosition,
   ): void {
-    if (player.id !== this.state.p1 && player.id !== this.state.p2)
+    if (playerID !== this.state.p1 && playerID !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     if (this.state.internalState !== 'GAME_MAIN') throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (player.id !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
+    if (playerID !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
     let shipBoard: BattleShipBoardPiece[][];
     let markerBoard: BattleShipBoardMarker[][];
-    let opponentId: PlayerID | undefined;
+    let opponentID: PlayerID | undefined;
     let sunkenShips: BattleShipBoardPiece[];
-    if (player.id === this.state.p1) {
+    if (playerID === this.state.p1) {
       shipBoard = this.state.p2Board;
       markerBoard = this.state.p2MarkerBoard;
-      opponentId = this.state.p2;
+      opponentID = this.state.p2;
       sunkenShips = this.state.p2SunkenShips;
     } else {
       shipBoard = this.state.p1Board;
-      opponentId = this.state.p1;
+      opponentID = this.state.p1;
       markerBoard = this.state.p1MarkerBoard;
       sunkenShips = this.state.p1SunkenShips;
     }
@@ -180,7 +180,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (hitShip === undefined) {
       // When the shot misses
       markerBoard[posX][posY] = 'M';
-      this.state.turnPlayer = opponentId;
+      this.state.turnPlayer = opponentID;
     } else {
       // When the shot hits
       markerBoard[posX][posY] = 'H';
@@ -188,10 +188,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
         // When the game is won
-        this.state.winner = player.id;
+        this.state.winner = playerID;
         this.state.internalState = 'GAME_END';
         this._updateExternalState();
-      } else this.state.turnPlayer = opponentId;
+      } else this.state.turnPlayer = opponentID;
     }
   }
 
