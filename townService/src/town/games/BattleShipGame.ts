@@ -15,6 +15,7 @@ import {
   BattleShipGameState,
   BattleShipMove,
   GameMove,
+  PlayerID,
 } from '../../types/CoveyTownSocket';
 import Game from './Game';
 
@@ -158,11 +159,11 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   /**
    * Handle player submission of their board setup during GAME_START and validate that the layout is legal.
    * Transition into GAME_MAIN after both players have submitted. Throw error if the board is not legal.
-   * @param player The player submitting their initial board.
+   * @param playerID The ID of the player submitting their initial board.
    * @param board The initial board to be checked and, if legal, recorded.
    */
-  protected _applySetupMove(player: Player, board: BattleShipBoardPiece[][]): void {
-    if (player.id !== this.state.p1 && player.id !== this.state.p2)
+  protected _applySetupMove(playerID: PlayerID, board: BattleShipBoardPiece[][]): void {
+    if (playerID !== this.state.p1 && playerID !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
     const missingShips: BattleShipBoardPiece[] = [
@@ -198,7 +199,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
           missingShips.join(BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR),
         ),
       );
-    if (player.id === this.state.p1) this.state.p1InitialBoard = board;
+    if (playerID === this.state.p1) this.state.p1InitialBoard = board;
     else this.state.p2InitialBoard = board;
     if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
       this.state.internalState = 'GAME_MAIN';
