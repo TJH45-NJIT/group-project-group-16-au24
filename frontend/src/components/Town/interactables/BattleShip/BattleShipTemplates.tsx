@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button, Center, Table, Td, Tr, useToast } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BattleShipBoardMarker, BattleShipBoardPiece } from '../../../../types/CoveyTownSocket';
 import { BattleShipBoard } from './BattleShipBoard';
 
@@ -14,6 +14,7 @@ export function SampleBoard(): JSX.Element {
   // The actual arrays are arrays of arrays corresponding to the same column, but the visual representation of these
   // arrays *looks like* rows of rows when read left-to-right, which is not how the arrays are interpreted. As such, the
   // resulting board will *look like* the transpose of these arrays even though the arrays and board are indeed consistent.
+  const [shipToggle, setShipToggle] = useState<boolean>(true);
   const [initialBoard] = useState<BattleShipBoardPiece[][]>([
     // eslint-disable-next-line prettier/prettier
     [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
@@ -58,11 +59,21 @@ export function SampleBoard(): JSX.Element {
     // eslint-disable-next-line prettier/prettier
     [          'M',    undefined,    undefined,    undefined,    undefined,    undefined,          'M',    undefined,    undefined,    undefined ],
   ]);
+  function logClickedCell(x: number, y: number) {
+    console.log(`Cell clicked: (${x}, ${y})`);
+  }
+  useEffect(() => {
+    setTimeout(() => {
+      // The ships go away after 5 seconds to demonstrate that the component rerenders.
+      setShipToggle(false);
+    }, 5000);
+  }, []);
   return (
     <BattleShipBoard
       initialBoard={initialBoard}
-      displayInitialBoard={true}
-      markerBoard={markerBoard}></BattleShipBoard>
+      displayInitialBoard={shipToggle}
+      markerBoard={markerBoard}
+      onCellClick={logClickedCell}></BattleShipBoard>
   );
 }
 
