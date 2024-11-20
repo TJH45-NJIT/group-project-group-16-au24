@@ -1,18 +1,11 @@
-import {
-  Center,
-  Modal,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/react';
+import { Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractable, useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
 import { InteractableID } from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
-import { SampleBoard } from './BattleShipTemplates';
+import { BattleShipBoardsView } from './BattleShipBoardsView';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   const gameAreaController =
@@ -23,9 +16,17 @@ function BattleShipArea({ interactableID }: { interactableID: InteractableID }):
       <p>
         {gameAreaController.id} {townController.townID}
       </p>
-      <Center>
-        <SampleBoard />
-      </Center>
+      <BattleShipBoardsView
+        leftPlayerName={'You'}
+        leftInitialBoard={[]}
+        leftDisplayInitialBoard={true}
+        leftMarkerBoard={[]}
+        leftShipsRemaining={5}
+        rightPlayerName={'Enemy Dude'}
+        rightInitialBoard={[]}
+        rightDisplayInitialBoard={true}
+        rightMarkerBoard={[]}
+        rightShipsRemaining={5}></BattleShipBoardsView>
     </div>
   );
 }
