@@ -76,10 +76,10 @@ export function BattleShipMainGameView({
         }
         leftShipsRemaining={
           isP1()
-            ? 0 // REPLACE (WHEN ACCESSIBLE VIA MERGE): "5 - gameModel.state.p1SunkenShips.length"
+            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
             : isP2()
-            ? 0 // REPLACE (WHEN ACCESSIBLE VIA MERGE): "5 - gameModel.state.p2SunkenShips.length"
-            : 0 // REPLACE (WHEN ACCESSIBLE VIA MERGE): "5 - gameModel.state.p1SunkenShips.length"
+            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
+            : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
         }
         rightPlayerName={
           isPlayer()
@@ -104,15 +104,15 @@ export function BattleShipMainGameView({
         }
         rightShipsRemaining={
           isP1()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: "5 - gameModel.state.p2SunkenShips.length" */
+            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
             : isP2()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: "5 - gameModel.state.p1SunkenShips.length" */
-            : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: "5 - gameModel.state.p2SunkenShips.length" */
+            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
+            : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
         }></BattleShipBoardsView>
       <br />
       <Text style={{ textAlign: TEXT_ALIGN }}>
         {isPlayer()
-          ? '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH gameModel.state.turnPlayer */ ===
+          ? '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */ ===
             townController.ourPlayer.id
             ? 'It&apos;s your turn. Click one of the squares on the right to attack that spot!'
             : 'It&apos;s not your turn right now.'
@@ -120,9 +120,9 @@ export function BattleShipMainGameView({
               gameAreaController.players.find(
                 value =>
                   value.id ===
-                  '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH gameModel.state.turnPlayer */,
+                  '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */,
               )?.userName ??
-              '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2' */
+              '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2' */
             }&apos;s turn.`}
       </Text>
       <Center>
