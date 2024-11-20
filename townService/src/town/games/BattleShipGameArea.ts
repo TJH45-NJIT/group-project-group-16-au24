@@ -113,6 +113,7 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
     this.observersInGame = this.observersInGame.filter(p => p.id !== player.id);
     this._occupants = this.occupants.filter(p => p.id !== player.id);
+    this._emitAreaChanged();
     return undefined as InteractableCommandReturnType<CommandType>;
   }
 
