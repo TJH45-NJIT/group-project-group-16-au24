@@ -1,5 +1,8 @@
 import InvalidParametersError, {
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
@@ -43,7 +46,11 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (Array.isArray(move.move)) {
       this._applySetupMove(move.playerID, move.move);
     } else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
-      this._applyAttackMove(move.playerID, move.move.posX, move.move.posY);
+      this._applyAttackMove(
+        move.playerID,
+        move.move.posX as BattleShipGridPosition,
+        move.move.posY as BattleShipGridPosition,
+      );
     }
   }
 
