@@ -9,15 +9,15 @@ export const TEXT_ALIGN = 'center';
 
 interface BattleShipBoardsViewProps {
   leftPlayerName: string;
-  leftInitialBoard: BattleShipBoardPiece[][];
+  leftInitialBoard: readonly (readonly BattleShipBoardPiece[])[];
   leftDisplayInitialBoard: boolean;
-  leftMarkerBoard: BattleShipBoardMarker[][];
+  leftMarkerBoard: readonly (readonly BattleShipBoardMarker[])[];
   leftShipsRemaining: number;
   leftBoardClickCallback?(x: number, y: number): void;
   rightPlayerName: string;
-  rightInitialBoard: BattleShipBoardPiece[][];
+  rightInitialBoard: readonly (readonly BattleShipBoardPiece[])[];
   rightDisplayInitialBoard: boolean;
-  rightMarkerBoard: BattleShipBoardMarker[][];
+  rightMarkerBoard: readonly (readonly BattleShipBoardMarker[])[];
   rightShipsRemaining: number;
   rightBoardClickCallback?(x: number, y: number): void;
 }
