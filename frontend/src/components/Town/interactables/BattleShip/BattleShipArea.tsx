@@ -1,19 +1,32 @@
-import { Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
+import {
+  Center,
+  Modal,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+} from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractable, useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
 import { InteractableID } from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
+import { SampleBoard } from './BattleShipTemplates';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
   return (
-    <p>
-      {gameAreaController.id} {townController.townID}
-    </p>
+    <div>
+      <p>
+        {gameAreaController.id} {townController.townID}
+      </p>
+      <Center>
+        <SampleBoard />
+      </Center>
+    </div>
   );
 }
 
