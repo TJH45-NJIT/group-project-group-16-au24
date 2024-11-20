@@ -1,12 +1,11 @@
-import { 
-  GAME_ID_MISSMATCH_MESSAGE, 
-  GAME_NOT_IN_PROGRESS_MESSAGE, 
+import {
+  GAME_ID_MISSMATCH_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
   INVALID_COMMAND_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
   BattleShipMove,
-  GameMove,
   GameMoveCommand,
   InteractableCommand,
   InteractableCommandReturnType,
@@ -20,10 +19,11 @@ import GameArea from './GameArea';
 
 export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   // eslint-disable-next-line class-methods-use-this
+  playersInGame: Player[] = [];
 
-  playersInGame : Player[] = [];
-  observersInGame : Player[] = [];
+  observersInGame: Player[] = [];
 
+  // eslint-disable-next-line class-methods-use-this
   protected getType(): InteractableType {
     return 'BattleShipArea';
   }
@@ -53,8 +53,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: LeaveGameCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if(this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if(this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
     this._game.leave(player);
     this._emitAreaChanged();
     return undefined as InteractableCommandReturnType<CommandType>;
@@ -70,8 +70,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: GameMoveCommand<BattleShipMove>,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if(this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if(this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
     this._game.applyMove({
       gameID: command.gameID,
       playerID: player.id,
@@ -80,7 +80,7 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     this._emitAreaChanged();
     return undefined as InteractableCommandReturnType<CommandType>;
   }
-  
+
   /**
    * Deals with Join Spectator commands
    * Helper Method handle command
@@ -88,11 +88,11 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
    * @param player The player who sent the command
    */
   handleSpectatorJoinCommand<CommandType extends InteractableCommand>(
-    command: JoinSpectatorCommand, 
-    player: Player
+    command: JoinSpectatorCommand,
+    player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if(this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if(this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
     this.observersInGame.push(player);
     this._occupants.push(player);
     this._emitAreaChanged();
@@ -109,8 +109,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: LeaveSpectatorCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if(this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if(this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
     this.observersInGame = this.observersInGame.filter(p => p.id !== player.id);
     this._occupants = this.occupants.filter(p => p.id !== player.id);
     return undefined as InteractableCommandReturnType<CommandType>;
@@ -127,10 +127,10 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
     if (command.type === 'JoinGame') return this.handleJoinCommand(player);
-    if (command.type === 'LeaveGame') return this.handleLeaveCommand(command,player);
-    if (command.type === 'GameMove') return this.handleGameMoveCommand(command,player);
-    if (command.type === 'JoinSpectator') return this.handleSpectatorJoinCommand(command,player);
-    if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command,player);
+    if (command.type === 'LeaveGame') return this.handleLeaveCommand(command, player);
+    if (command.type === 'GameMove') return this.handleGameMoveCommand(command, player);
+    if (command.type === 'JoinSpectator') return this.handleSpectatorJoinCommand(command, player);
+    if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command, player);
     throw new Error(INVALID_COMMAND_MESSAGE);
   }
 }
