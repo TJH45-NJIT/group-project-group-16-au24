@@ -1,32 +1,53 @@
-import { Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import {
+  Center,
+  Modal,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+} from '@chakra-ui/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractable, useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
-import { InteractableID } from '../../../../types/CoveyTownSocket';
+import {
+  BattleShipGameState,
+  GameInstance,
+  InteractableID,
+} from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
-import { BattleShipBoardsView } from './BattleShipBoardsView';
+import { BattleShipGameStartView } from './BattleShipGameStartView';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
+  const [gameModel, setGameModel] = useState<GameInstance<BattleShipGameState>>();
+
+  useEffect(() => {
+    const deliverUpdatedModel = () => {
+      const gameModelRaw = gameAreaController.toInteractableAreaModel().game;
+      if (gameModelRaw !== undefined) setGameModel(gameModelRaw);
+      else console.log('Problem!');
+    };
+    const updateListener = () => deliverUpdatedModel();
+    gameAreaController.addListener('gameUpdated', updateListener);
+    return () => {
+      gameAreaController.removeListener('gameUpdated', updateListener);
+    };
+  }, [gameAreaController]);
+
   return (
     <div>
-      <p>
-        {gameAreaController.id} {townController.townID}
-      </p>
-      <BattleShipBoardsView
-        leftPlayerName={'You'}
-        leftInitialBoard={[]}
-        leftDisplayInitialBoard={true}
-        leftMarkerBoard={[]}
-        leftShipsRemaining={5}
-        rightPlayerName={'Enemy Dude'}
-        rightInitialBoard={[]}
-        rightDisplayInitialBoard={true}
-        rightMarkerBoard={[]}
-        rightShipsRemaining={5}></BattleShipBoardsView>
+      {gameModel !== undefined ? (
+        <BattleShipGameStartView
+          interactableID={interactableID}
+          gameModel={gameModel}></BattleShipGameStartView>
+      ) : (
+        <Center>
+          <Text>An unexpected error occurred.</Text>
+        </Center>
+      )}
     </div>
   );
 }
