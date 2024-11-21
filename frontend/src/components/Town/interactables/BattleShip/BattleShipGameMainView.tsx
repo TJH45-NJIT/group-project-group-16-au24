@@ -10,7 +10,7 @@ import {
 } from '../../../../types/CoveyTownSocket';
 import { BattleShipBoardsView, TEXT_ALIGN } from './BattleShipBoardsView';
 
-interface InMainGameViewProps {
+interface BattleShipMainGameViewProps {
   interactableID: InteractableID;
   gameModel: GameInstance<BattleShipGameState>;
 }
@@ -18,7 +18,7 @@ interface InMainGameViewProps {
 export function BattleShipMainGameView({
   interactableID,
   gameModel,
-}: InMainGameViewProps): JSX.Element {
+}: BattleShipMainGameViewProps): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
