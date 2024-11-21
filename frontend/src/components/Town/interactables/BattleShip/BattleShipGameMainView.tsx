@@ -10,15 +10,15 @@ import {
 } from '../../../../types/CoveyTownSocket';
 import { BattleShipBoardsView, TEXT_ALIGN } from './BattleShipBoardsView';
 
-interface BattleShipMainGameViewProps {
+interface BattleShipGameMainViewProps {
   interactableID: InteractableID;
   gameModel: GameInstance<BattleShipGameState>;
 }
 
-export function BattleShipMainGameView({
+export function BattleShipGameMainView({
   interactableID,
   gameModel,
-}: BattleShipMainGameViewProps): JSX.Element {
+}: BattleShipGameMainViewProps): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
@@ -26,7 +26,7 @@ export function BattleShipMainGameView({
   // By storing the usernames, we can still show the boards with the correct
   // usernames if the game ends due to someone leaving.
   const [p1Username, setP1Username] = useState<string>('Player 1');
-  const [p2Username, setP2Username] = useState<string>('Player 1');
+  const [p2Username, setP2Username] = useState<string>('Player 2');
 
   // Temporary functions to be replaced with BattleShipAreaController
   // equivalents when that becomes available:

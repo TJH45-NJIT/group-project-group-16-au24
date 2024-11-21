@@ -13,36 +13,55 @@ import { useInteractable, useInteractableAreaController } from '../../../../clas
 import useTownController from '../../../../hooks/useTownController';
 import {
   BattleShipGameState,
+  BattleShipGameStatus,
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
+import { BattleShipGameMainView } from './BattleShipGameMainView';
 import { BattleShipGameStartView } from './BattleShipGameStartView';
+import { BattleShipGameWaitView } from './BattleShipGameWaitView';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const [gameModel, setGameModel] = useState<GameInstance<BattleShipGameState>>();
+  const [internalState, setInternalState] = useState<BattleShipGameStatus>('GAME_WAIT');
 
   useEffect(() => {
     const deliverUpdatedModel = () => {
       const gameModelRaw = gameAreaController.toInteractableAreaModel().game;
-      if (gameModelRaw !== undefined) setGameModel(gameModelRaw);
-      else console.log('Problem!');
+      if (gameModelRaw !== undefined) {
+        setGameModel(gameModelRaw);
+        setInternalState(gameModelRaw.state.internalState);
+      }
     };
-    const updateListener = () => deliverUpdatedModel();
-    gameAreaController.addListener('gameUpdated', updateListener);
+    gameAreaController.addListener('gameUpdated', deliverUpdatedModel);
     return () => {
-      gameAreaController.removeListener('gameUpdated', updateListener);
+      gameAreaController.removeListener('gameUpdated', deliverUpdatedModel);
     };
   }, [gameAreaController]);
 
   return (
     <div>
-      {gameModel !== undefined ? (
+      {internalState === 'GAME_WAIT' ? (
+        <BattleShipGameWaitView
+          interactableID={interactableID}
+          gameModel={
+            gameModel as unknown as GameInstance<BattleShipGameState>
+          }></BattleShipGameWaitView>
+      ) : internalState === 'GAME_START' ? (
         <BattleShipGameStartView
           interactableID={interactableID}
-          gameModel={gameModel}></BattleShipGameStartView>
+          gameModel={
+            gameModel as unknown as GameInstance<BattleShipGameState>
+          }></BattleShipGameStartView>
+      ) : internalState === 'GAME_MAIN' || internalState === 'GAME_END' ? (
+        <BattleShipGameMainView
+          interactableID={interactableID}
+          gameModel={
+            gameModel as unknown as GameInstance<BattleShipGameState>
+          }></BattleShipGameMainView>
       ) : (
         <Center>
           <Text>An unexpected error occurred.</Text>
