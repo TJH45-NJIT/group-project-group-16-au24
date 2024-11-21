@@ -118,6 +118,7 @@ export interface BattleShipGameState extends WinnableGameState {
   p1MarkerBoard: BattleShipBoardMarker[][];
   p2MarkerBoard: BattleShipBoardMarker[][];
   internalState: BattleShipGameStatus;
+  moves: BattleShipAttackMove[];
 }
 
 export type InteractableID = string;

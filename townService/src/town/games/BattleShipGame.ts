@@ -1,5 +1,6 @@
 import InvalidParametersError, {
   GAME_FULL_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
@@ -26,8 +27,11 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
       internalState: 'GAME_WAIT',
       status: 'WAITING_TO_START',
+      moves: [],
     });
   }
+
+  _moveStack: PlayerID[] = [];
 
   /**
    * Call _applySetupMove() or _applyAttackMove() based on the kind of move provided. Should parse the relevant information
@@ -38,7 +42,16 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (Array.isArray(move.move)) {
       this._applySetupMove(move.playerID, move.move);
     } else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
-      this._applyAttackMove(move.playerID, move.move.posX, move.move.posY);
+      if (
+        (move.playerID === this.state.p1 && this._moveStack.length % 2 === 0) ||
+        (move.playerID === this.state.p2 && this._moveStack.length % 2 === 1)
+      ) {
+        this._moveStack.push(move.playerID);
+        this._applyAttackMove(move.playerID, move.move.posX, move.move.posY);
+        this.state.moves.push(move.move);
+      } else {
+        throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
+      }
     }
   }
 
