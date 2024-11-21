@@ -32,9 +32,12 @@ export function BattleShipGameWaitView({
   }, [gameModel, townController.ourPlayer.id]);
   return (
     <StackDivider>
+      {/* Using separate Center components causes child components to be in separate rows. */}
       <Center>
         <Text>{gameModel?.players.length ?? 0}/2 Players</Text>
-        <Button /* Having this Button in a separate Center component causes it to be above the other Buttons. */
+      </Center>
+      <Center>
+        <Button
           margin={BUTTON_MARGIN}
           disabled={(gameModel?.players.length ?? 0) >= 2 || isPlayer()}>
           Join Game
