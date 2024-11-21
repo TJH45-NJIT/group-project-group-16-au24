@@ -8,7 +8,6 @@ import {
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
-import { TEXT_ALIGN } from './BattleShipBoardsView';
 
 const BUTTON_MARGIN = 5;
 
@@ -33,9 +32,9 @@ export function BattleShipGameWaitView({
   }, [gameModel, townController.ourPlayer.id]);
   return (
     <StackDivider>
-      <Text style={{ textAlign: TEXT_ALIGN }}>{gameModel?.players.length ?? 0}/2 Players</Text>
       <Center>
-        <Button /* Having this Button in an extra Center component causes it to be above the other Buttons. */
+        <Text>{gameModel?.players.length ?? 0}/2 Players</Text>
+        <Button /* Having this Button in a separate Center component causes it to be above the other Buttons. */
           margin={BUTTON_MARGIN}
           disabled={(gameModel?.players.length ?? 0) >= 2 || isPlayer()}>
           Join Game

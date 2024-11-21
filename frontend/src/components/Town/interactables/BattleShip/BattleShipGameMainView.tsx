@@ -8,7 +8,7 @@ import {
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
-import { BattleShipBoardsView, TEXT_ALIGN } from './BattleShipBoardsView';
+import { BattleShipBoardsView } from './BattleShipBoardsView';
 
 interface BattleShipGameMainViewProps {
   interactableID: InteractableID;
@@ -110,22 +110,22 @@ export function BattleShipGameMainView({
             : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
         }></BattleShipBoardsView>
       <br />
-      <Text style={{ textAlign: TEXT_ALIGN }}>
-        {isPlayer()
-          ? '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */ ===
-            townController.ourPlayer.id
-            ? 'It&apos;s your turn. Click one of the squares on the right to attack that spot!'
-            : 'It&apos;s not your turn right now.'
-          : `It is currently ${
-              gameAreaController.players.find(
-                value =>
-                  value.id ===
-                  '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */,
-              )?.userName ??
-              '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2' */
-            }&apos;s turn.`}
-      </Text>
       <Center>
+        <Text>
+          {isPlayer()
+            ? '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */ ===
+              townController.ourPlayer.id
+              ? 'It&apos;s your turn. Click one of the squares on the right to attack that spot!'
+              : 'It&apos;s not your turn right now.'
+            : `It is currently ${
+                gameAreaController.players.find(
+                  value =>
+                    value.id ===
+                    '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */,
+                )?.userName ??
+                '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2' */
+              }&apos;s turn.`}
+        </Text>
         <Button>Return</Button>
       </Center>
     </div>

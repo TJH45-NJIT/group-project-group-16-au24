@@ -1,11 +1,20 @@
-import { Center, Table, Td, Tr } from '@chakra-ui/react';
+import { Center, Table, Td, Tr, Text } from '@chakra-ui/react';
 import React from 'react';
 import { BattleShipBoardMarker, BattleShipBoardPiece } from '../../../../types/CoveyTownSocket';
 import { BattleShipBoard } from './BattleShipBoard';
 
 const DIVIDER_THICKNESS = 5;
 const DIVIDER_COLOR = 'black';
-export const TEXT_ALIGN = 'center';
+
+function TextCell({ text }: { text: string }): JSX.Element {
+  return (
+    <Td borderWidth={0}>
+      <Center>
+        <Text>{text}</Text>
+      </Center>
+    </Td>
+  );
+}
 
 interface BattleShipBoardsViewProps {
   leftPlayerName: string;
@@ -39,12 +48,8 @@ export function BattleShipBoardsView({
   return (
     <Table>
       <Tr>
-        <Td borderWidth={0} textAlign={TEXT_ALIGN}>
-          {leftPlayerName}
-        </Td>
-        <Td borderWidth={0} textAlign={TEXT_ALIGN}>
-          {rightPlayerName}
-        </Td>
+        <TextCell text={leftPlayerName} />
+        <TextCell text={rightPlayerName} />
       </Tr>
       <Tr>
         <Td borderWidth={0} borderRightWidth={DIVIDER_THICKNESS} borderColor={DIVIDER_COLOR}>
@@ -67,12 +72,8 @@ export function BattleShipBoardsView({
         </Td>
       </Tr>
       <Tr>
-        <Td borderWidth={0} textAlign={TEXT_ALIGN}>
-          {leftShipsRemaining} Ships Remaining
-        </Td>
-        <Td borderWidth={0} textAlign={TEXT_ALIGN}>
-          {rightShipsRemaining} Ships Remaining
-        </Td>
+        <TextCell text={`${leftShipsRemaining} Ships Remaining`} />
+        <TextCell text={`${rightShipsRemaining} Ships Remaining`} />
       </Tr>
     </Table>
   );
