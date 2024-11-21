@@ -47,9 +47,7 @@ function BattleShipArea({ interactableID }: { interactableID: InteractableID }):
       {internalState === 'GAME_WAIT' ? (
         <BattleShipGameWaitView
           interactableID={interactableID}
-          gameModel={
-            gameModel as unknown as GameInstance<BattleShipGameState>
-          }></BattleShipGameWaitView>
+          gameModel={gameModel}></BattleShipGameWaitView>
       ) : internalState === 'GAME_START' ? (
         <BattleShipGameStartView
           interactableID={interactableID}
