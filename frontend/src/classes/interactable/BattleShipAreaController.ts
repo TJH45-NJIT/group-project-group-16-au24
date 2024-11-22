@@ -1,11 +1,11 @@
-import { 
+import {
   GameArea,
   GameStatus,
   GameMoveCommand,
   BattleShipMove,
   BattleShipGameStatus,
-  BattleShipGameState, 
-  BattleShipBoardMarker, 
+  BattleShipGameState,
+  BattleShipBoardMarker,
   BattleShipBoardPiece,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
@@ -28,9 +28,8 @@ export default class BattleShipAreaController extends GameAreaController<
   BattleShipGameState,
   BattleShipEvents
 > {
-
   get ourShipBoard(): BattleShipBoardPiece[][] | undefined {
-    if(this.isP2){
+    if (this.isP2) {
       return this._model.game?.state.p2Board;
     }
     return this._model.game?.state.p1Board; //TODO Unsure how this will interact with forntend and where boards are updated
@@ -38,37 +37,37 @@ export default class BattleShipAreaController extends GameAreaController<
 
   //Identifies the left MarkerBoard
   get ourMarkerBoard(): BattleShipBoardMarker[][] | undefined {
-    if(this.isP2){
+    if (this.isP2) {
       return this._model.game?.state.p2MarkerBoard;
     }
     return this._model.game?.state.p1MarkerBoard;
   }
-  
+
   //Identifies the right MarkerBoard
   get theirMarkerBoard(): BattleShipBoardMarker[][] | undefined {
-    if(this.isP2){
+    if (this.isP2) {
       return this._model.game?.state.p1MarkerBoard;
     }
     return this._model.game?.state.p2MarkerBoard;
   }
 
   get p1(): PlayerController | undefined {
-    const p1 = this._players.find((player) => player.id === this._model.game?.state.p1);
+    const p1 = this._players.find(player => player.id === this._model.game?.state.p1);
     return p1;
   }
 
   get p2(): PlayerController | undefined {
-    const p2 = this._players.find((player) => player.id === this._model.game?.state.p2);
+    const p2 = this._players.find(player => player.id === this._model.game?.state.p2);
     return p2;
   }
 
   get winner(): PlayerController | undefined {
-    const winner = this._players.find((player) => player.id === this._model.game?.state.winner);
+    const winner = this._players.find(player => player.id === this._model.game?.state.winner);
     return winner;
   }
 
   get whoseTurn(): PlayerController | undefined {
-    const turnPlayer = this._players.find((player) => player.id === this._model.game?.state.turnPlayer);
+    const turnPlayer = this._players.find(player => player.id === this._model.game?.state.turnPlayer);
     return turnPlayer;
   }
 
@@ -89,7 +88,7 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   get isPlayer(): boolean {
-    if(this._townController.ourPlayer.id === this.p1?.id || this._townController.ourPlayer.id === this.p2?.id){
+    if (this._townController.ourPlayer.id === this.p1?.id || this._townController.ourPlayer.id === this.p2?.id) {
       return true;
     }
     return false;
@@ -119,10 +118,10 @@ export default class BattleShipAreaController extends GameAreaController<
     const oldState: BattleShipGameStatus = this.internalState;
     const lastTurnPlayer: PlayerController | undefined = this.whoseTurn;
     super._updateFrom(newModel);
-    if(newModel.game === undefined) return;
-    if(oldState === 'GAME_START' && this.internalState === 'GAME_MAIN') this.emit('shipBoardSet', this.ourShipBoard); //TODO May need a isPlayer check
-    if(lastTurnPlayer === this.whoseTurn) return;
-    if(this.isP2){
+    if (newModel.game === undefined) return;
+    if (oldState === 'GAME_START' && this.internalState === 'GAME_MAIN') this.emit('shipBoardSet', this.ourShipBoard); //TODO May need a isPlayer check
+    if (lastTurnPlayer === this.whoseTurn) return;
+    if (this.isP2) {
       this.whoseTurn === this.p1 ? this.emit('theirMarkerBoardChange', this.theirMarkerBoard) : this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
     } else {
       this.whoseTurn === this.p1 ? this.emit('ourMarkerBoardChange', this.ourMarkerBoard) : this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
