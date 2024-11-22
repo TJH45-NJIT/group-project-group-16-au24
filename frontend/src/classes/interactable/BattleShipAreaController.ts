@@ -67,7 +67,9 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   get whoseTurn(): PlayerController | undefined {
-    const turnPlayer = this._players.find(player => player.id === this._model.game?.state.turnPlayer);
+    const turnPlayer = this._players.find(
+      player => player.id === this._model.game?.state.turnPlayer,
+    );
     return turnPlayer;
   }
 
@@ -88,7 +90,10 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   get isPlayer(): boolean {
-    if (this._townController.ourPlayer.id === this.p1?.id || this._townController.ourPlayer.id === this.p2?.id) {
+    if (
+      this._townController.ourPlayer.id === this.p1?.id ||
+      this._townController.ourPlayer.id === this.p2?.id
+    ) {
       return true;
     }
     return false;
@@ -104,7 +109,7 @@ export default class BattleShipAreaController extends GameAreaController<
 
   get status(): GameStatus {
     return this._model.game?.state.status ?? 'WAITING_TO_START';
-  } 
+  }
 
   get internalState(): BattleShipGameStatus {
     return this._model.game?.state.internalState ?? 'GAME_WAIT';
@@ -119,12 +124,21 @@ export default class BattleShipAreaController extends GameAreaController<
     const lastTurnPlayer: PlayerController | undefined = this.whoseTurn;
     super._updateFrom(newModel);
     if (newModel.game === undefined) return;
-    if (oldState === 'GAME_START' && this.internalState === 'GAME_MAIN') this.emit('shipBoardSet', this.ourShipBoard); //TODO May need a isPlayer check
+    if (oldState === 'GAME_START' && this.internalState === 'GAME_MAIN')
+      this.emit('shipBoardSet', this.ourShipBoard); //TODO May need a isPlayer check
     if (lastTurnPlayer === this.whoseTurn) return;
     if (this.isP2) {
-      this.whoseTurn === this.p1 ? this.emit('theirMarkerBoardChange', this.theirMarkerBoard) : this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
+      if (this.whoseTurn === this.p1) {
+        this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
+      } else {
+        this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
+      }
     } else {
-      this.whoseTurn === this.p1 ? this.emit('ourMarkerBoardChange', this.ourMarkerBoard) : this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
+      if (this.whoseTurn === this.p1) { 
+        this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
+      } else {
+        this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
+      }
     }
     this.emit('turnChanged', this.isOurTurn);
   }
@@ -132,8 +146,7 @@ export default class BattleShipAreaController extends GameAreaController<
   public async makeSetupMove(initBoard: BattleShipBoardPiece[][]) {
     if (this._model.game === undefined || this._instanceID === undefined || !this.isActive())
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);
-    if (this.internalState !== 'GAME_START')
-      throw new Error(NOT_SETUP_PHASE);
+    if (this.internalState !== 'GAME_START') throw new Error(NOT_SETUP_PHASE);
     const setupCommand: GameMoveCommand<BattleShipMove> = {
       type: 'GameMove',
       gameID: this._instanceID,
@@ -145,8 +158,7 @@ export default class BattleShipAreaController extends GameAreaController<
   public async makeAttackMove(posX: number, posY: number) {
     if (this._model.game === undefined || this._instanceID === undefined || !this.isActive())
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);
-    if (this.internalState !== 'GAME_MAIN')
-      throw new Error(NOT_ATTACK_PHASE);
+    if (this.internalState !== 'GAME_MAIN') throw new Error(NOT_ATTACK_PHASE);
     const attackCommand: GameMoveCommand<BattleShipMove> = {
       type: 'GameMove',
       gameID: this._instanceID,
