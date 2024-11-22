@@ -135,16 +135,16 @@ export function BattleShipGameMainView({
         <Text>
           {isPlayer()
             ? gameModel.state.turnPlayer === townController.ourPlayer.id
-              ? 'It&apos;s your turn. Click one of the squares on the right to attack that spot!'
-              : 'It&apos;s not your turn right now.'
+              ? "It's your turn. Click one of the squares on the right to attack that spot!"
+              : "It's not your turn right now."
             : `It is currently ${
                 gameAreaController.players.find(value => value.id === gameModel.state.turnPlayer)
                   ?.userName ?? gameModel.state.turnPlayer === gameModel.state.p1
                   ? 'Player 1'
                   : 'Player 2'
-              }&apos;s turn.`}
+              }'s turn.`}
         </Text>
-        <Button>Return</Button>
+        <Button hidden={true}>Return</Button>
       </Center>
     </div>
   );

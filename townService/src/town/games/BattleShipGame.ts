@@ -188,6 +188,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     else this.state.p2InitialBoard = board;
     if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
       this.state.internalState = 'GAME_MAIN';
+      this.state.turnPlayer = this.state.p1;
       this._updateExternalState();
     }
   }

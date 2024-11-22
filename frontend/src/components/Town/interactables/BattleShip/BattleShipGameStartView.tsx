@@ -71,30 +71,38 @@ export function BattleShipGameStartView({
   }
 
   return (
-    <Center>
+    <StackDivider>
       {isPlayer() ? (
         <StackDivider>
-          <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
-            initialBoard={initialBoard}
-            displayInitialBoard={true}
-            markerBoard={[]}></BattleShipBoard>
-          <Text>
-            <br />
-            Click and drag your ships to where you want them to be placed.
-            <br />
-            When you are ready to start the game, click the button below.
-            <br />
-          </Text>
-          <Button onClick={onSubmitButtonClick}>Submit</Button>
-          <Text>
-            {isP1()
-              ? gameModel.state.p2InitialBoard.length === 0
+          <Center>
+            <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
+              initialBoard={initialBoard}
+              displayInitialBoard={true}
+              markerBoard={[]}></BattleShipBoard>
+          </Center>
+          <Center>
+            <Text>
+              <br />
+              Click and drag your ships to where you want them to be placed.
+              <br />
+              When you are ready to start the game, click the button below.
+              <br />
+            </Text>
+          </Center>
+          <Center>
+            <Button onClick={onSubmitButtonClick}>Submit</Button>
+          </Center>
+          <Center>
+            <Text>
+              {isP1()
+                ? gameModel.state.p2InitialBoard.length === 0
+                  ? OPPONENT_NOT_READY_TEXT
+                  : OPPONENT_READY_TEXT
+                : gameModel.state.p1InitialBoard.length === 0
                 ? OPPONENT_NOT_READY_TEXT
-                : OPPONENT_READY_TEXT
-              : gameModel.state.p1InitialBoard.length === 0
-              ? OPPONENT_NOT_READY_TEXT
-              : OPPONENT_READY_TEXT}
-          </Text>
+                : OPPONENT_READY_TEXT}
+            </Text>
+          </Center>
         </StackDivider>
       ) : (
         <Text>
@@ -102,6 +110,6 @@ export function BattleShipGameStartView({
           they finish setting up!
         </Text>
       )}
-    </Center>
+    </StackDivider>
   );
 }
