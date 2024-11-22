@@ -102,6 +102,7 @@ export interface GameMove<MoveType> {
 export type BattleShipGameStatus = 'GAME_WAIT' | 'GAME_START' | 'GAME_MAIN' | 'GAME_END';
 export type BattleShipBoardPiece = 'Destroyer' | 'Submarine' | 'Cruiser' | 'Battleship' | 'Carrier' | undefined;
 export type BattleShipBoardMarker = 'H' | 'M' | undefined;
+export type BattleShipGridPosition = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type BattleShipSetupMove = BattleShipBoardPiece[][];
 export interface BattleShipAttackMove {
   posX: number;
@@ -117,6 +118,9 @@ export interface BattleShipGameState extends WinnableGameState {
   p2Board: BattleShipBoardPiece[][];
   p1MarkerBoard: BattleShipBoardMarker[][];
   p2MarkerBoard: BattleShipBoardMarker[][];
+  p1SunkenShips: BattleShipBoardPiece[];
+  p2SunkenShips: BattleShipBoardPiece[];
+  turnPlayer?: PlayerID;
   internalState: BattleShipGameStatus;
 }
 

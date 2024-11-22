@@ -5,14 +5,19 @@ import InvalidParametersError, {
   BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
   BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
   BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  BattleShipBoardMarker,
   BattleShipBoardPiece,
   BattleShipGameState,
+  BattleShipGridPosition,
   BattleShipMove,
   GameMove,
   PlayerID,
@@ -30,6 +35,9 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       p2Board: [],
       p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
       p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+      p1SunkenShips: [],
+      p2SunkenShips: [],
+      turnPlayer: undefined,
       internalState: 'GAME_WAIT',
       status: 'WAITING_TO_START',
     });
@@ -44,7 +52,11 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (Array.isArray(move.move)) {
       this._applySetupMove(move.playerID, move.move);
     } else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
-      this._applyAttackMove(move.playerID, move.move.posX, move.move.posY);
+      this._applyAttackMove(
+        move.playerID,
+        move.move.posX as BattleShipGridPosition,
+        move.move.posY as BattleShipGridPosition,
+      );
     }
   }
 
@@ -212,17 +224,74 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   }
 
   /**
+   * Detect if a given ship has sunk on a given board, and add that ship to the given
+   * sunken ships array if it did.
+   * @param shipBoard The board to scan for the given ship
+   * @param hitShip The ship for which to scan
+   * @param sunkenShips The array to update if the given ship has sunk
+   */
+  private static _detectSunkenShip(
+    shipBoard: BattleShipBoardPiece[][],
+    hitShip: BattleShipBoardPiece,
+    sunkenShips: BattleShipBoardPiece[],
+  ): void {
+    for (let x = 0; x < 10; x++)
+      for (let y = 0; y < 10; y++) if (shipBoard[x][y] === hitShip) return;
+    sunkenShips.push(hitShip);
+  }
+
+  /**
    * Handle an attack that a player makes on their turn during GAME_MAIN, announcing whether it was a hit or
    * miss. The hit/miss should be marked on the marker board for the defending player. If a hit results in
-   * completely destroying a ship, this should also be announced. Notify clients to change view to the order
-   * board if there is a next turn. Transition into GAME_END if the game ends as a result of a player losing
+   * completely destroying a ship, this should also be announced. The turn player should change if the move
+   * doesn't cause the game to end. Transition into GAME_END if the game ends as a result of a player losing
    * all ships.
-   * @param player The player making the move.
+   * @param playerID The ID of the player making the move.
    * @param posX The index of the "row" that corresponds to the attacked position.
    * @param posY The index of the "column" that corresponds to the attacked position.
    */
-  protected _applyAttackMove(playerID: PlayerID, posX: number, posY: number): void {
-    throw new Error(`${this.id} ${playerID} ${posX} ${posY} Method not implemented.`);
+  protected _applyAttackMove(
+    playerID: PlayerID,
+    posX: BattleShipGridPosition,
+    posY: BattleShipGridPosition,
+  ): void {
+    if (playerID !== this.state.p1 && playerID !== this.state.p2)
+      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (this.state.internalState !== 'GAME_MAIN') throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (playerID !== this.state.turnPlayer) throw new Error(MOVE_NOT_YOUR_TURN_MESSAGE);
+    let shipBoard: BattleShipBoardPiece[][];
+    let markerBoard: BattleShipBoardMarker[][];
+    let opponentID: PlayerID | undefined;
+    let sunkenShips: BattleShipBoardPiece[];
+    if (playerID === this.state.p1) {
+      shipBoard = this.state.p2Board;
+      markerBoard = this.state.p2MarkerBoard;
+      opponentID = this.state.p2;
+      sunkenShips = this.state.p2SunkenShips;
+    } else {
+      shipBoard = this.state.p1Board;
+      opponentID = this.state.p1;
+      markerBoard = this.state.p1MarkerBoard;
+      sunkenShips = this.state.p1SunkenShips;
+    }
+    if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+    const hitShip = shipBoard[posX][posY];
+    if (hitShip === undefined) {
+      // When the shot misses
+      markerBoard[posX][posY] = 'M';
+      this.state.turnPlayer = opponentID;
+    } else {
+      // When the shot hits
+      markerBoard[posX][posY] = 'H';
+      shipBoard[posX][posY] = undefined;
+      BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
+      if (sunkenShips.length === 5) {
+        // When the game is won
+        this.state.winner = playerID;
+        this.state.internalState = 'GAME_END';
+        this._updateExternalState();
+      } else this.state.turnPlayer = opponentID;
+    }
   }
 
   /**
