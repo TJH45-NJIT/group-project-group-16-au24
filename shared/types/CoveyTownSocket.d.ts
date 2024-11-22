@@ -122,6 +122,7 @@ export interface BattleShipGameState extends WinnableGameState {
   p2SunkenShips: BattleShipBoardPiece[];
   turnPlayer?: PlayerID;
   internalState: BattleShipGameStatus;
+  moves: BattleShipAttackMove[];
 }
 
 export type InteractableID = string;

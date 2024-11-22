@@ -40,6 +40,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       turnPlayer: undefined,
       internalState: 'GAME_WAIT',
       status: 'WAITING_TO_START',
+      moves: [],
     });
   }
 
@@ -57,6 +58,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
         move.move.posX as BattleShipGridPosition,
         move.move.posY as BattleShipGridPosition,
       );
+      this.state.moves.push(move.move);
     }
   }
 
