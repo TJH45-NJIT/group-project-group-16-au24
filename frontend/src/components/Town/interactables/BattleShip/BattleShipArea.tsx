@@ -37,6 +37,7 @@ function BattleShipArea({ interactableID }: { interactableID: InteractableID }):
       }
     };
     gameAreaController.addListener('gameUpdated', deliverUpdatedModel);
+    deliverUpdatedModel();
     return () => {
       gameAreaController.removeListener('gameUpdated', deliverUpdatedModel);
     };
