@@ -134,7 +134,7 @@ export default class BattleShipAreaController extends GameAreaController<
         this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
       }
     } else {
-      if (this.whoseTurn === this.p1) { 
+      if (this.whoseTurn === this.p1) {
         this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
       } else {
         this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
