@@ -251,7 +251,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     }
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
     const hitShip = shipBoard[posX][posY];
-    if (hitShip === undefined) {
+    if (hitShip === undefined || hitShip === null) {
       // When the shot misses
       markerBoard[posX][posY] = 'M';
       this.state.turnPlayer = opponentID;
