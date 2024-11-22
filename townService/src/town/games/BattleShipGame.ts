@@ -31,8 +31,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       p2: undefined,
       p1InitialBoard: [],
       p2InitialBoard: [],
-      p1Board: [],
-      p2Board: [],
+      p1Board: [[], [], [], [], [], [], [], [], [], []],
+      p2Board: [[], [], [], [], [], [], [], [], [], []],
       p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
       p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
       p1SunkenShips: [],
@@ -188,6 +188,11 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     else this.state.p2InitialBoard = board;
     if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
       this.state.internalState = 'GAME_MAIN';
+      for (let x = 0; x < 10; x++)
+        for (let y = 0; y < 10; y++) {
+          this.state.p1Board[x][y] = this.state.p1InitialBoard[x][y];
+          this.state.p2Board[x][y] = this.state.p2InitialBoard[x][y];
+        }
       this.state.turnPlayer = this.state.p1;
       this._updateExternalState();
     }
@@ -245,15 +250,15 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       sunkenShips = this.state.p1SunkenShips;
     }
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
-    const hitShip = shipBoard[posX as number][posY as number];
+    const hitShip = shipBoard[posX][posY];
     if (hitShip === undefined) {
       // When the shot misses
-      markerBoard[posX as number][posY as number] = 'M';
+      markerBoard[posX][posY] = 'M';
       this.state.turnPlayer = opponentID;
     } else {
       // When the shot hits
-      markerBoard[posX as number][posY as number] = 'H';
-      shipBoard[posX as number][posY as number] = undefined;
+      markerBoard[posX][posY] = 'H';
+      shipBoard[posX][posY] = undefined;
       BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
         // When the game is won
