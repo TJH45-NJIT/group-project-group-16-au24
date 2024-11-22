@@ -180,13 +180,17 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand | JoinSpectatorCommand | LeaveSpectatorCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
 }
 export interface JoinGameCommand {
   type: 'JoinGame';
+}
+export interface LeaveSpectatorCommand {
+  type: 'LeaveSpectator';
+  gameID: GameInstanceID;
 }
 export interface LeaveGameCommand {
   type: 'LeaveGame';
@@ -197,8 +201,13 @@ export interface GameMoveCommand<MoveType> {
   gameID: GameInstanceID;
   move: MoveType;
 }
+export interface JoinSpectatorCommand{
+  type: 'JoinSpectator';
+  gameID: GameInstanceID;
+}
 export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
   CommandType extends JoinGameCommand ? { gameID: string}:
+  CommandType extends JoinSpectatorCommand ? { gameID: string}:
   CommandType extends ViewingAreaUpdateCommand ? undefined :
   CommandType extends GameMoveCommand<BattleShipMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :
