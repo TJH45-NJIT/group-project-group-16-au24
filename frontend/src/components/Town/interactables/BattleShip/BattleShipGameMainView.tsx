@@ -133,7 +133,11 @@ export function BattleShipGameMainView({
       <br />
       <Center>
         <Text>
-          {isPlayer()
+          {gameModel.state.internalState === 'GAME_END'
+            ? `The winner is ${gameAreaController.players.find(
+                value => value.id === gameModel.state.winner,
+              )}`
+            : isPlayer()
             ? gameModel.state.turnPlayer === townController.ourPlayer.id
               ? "It's your turn. Click one of the squares on the right to attack that spot!"
               : "It's not your turn right now."
