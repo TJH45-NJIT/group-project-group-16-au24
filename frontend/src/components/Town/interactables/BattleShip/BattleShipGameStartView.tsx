@@ -27,6 +27,7 @@ export function BattleShipGameStartView({
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toast = useToast();
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
@@ -66,22 +67,7 @@ export function BattleShipGameStartView({
   }, [gameModel.state.p1, townController.ourPlayer.id]);
 
   async function onSubmitButtonClick() {
-    try {
-      await gameAreaController.makeSetupMove(initialBoard);
-    } catch (anyException) {
-      if (anyException instanceof Error) {
-        const error: Error = anyException;
-        toast({
-          description: error.message,
-          status: 'error',
-        });
-      } else {
-        toast({
-          description: 'An unexpected error occurred.',
-          status: 'error',
-        });
-      }
-    }
+    await gameAreaController.makeSetupMove(initialBoard);
   }
 
   return (
