@@ -143,9 +143,8 @@ export function BattleShipGameMainView({
               : "It's not your turn right now."
             : `It is currently ${
                 gameAreaController.players.find(value => value.id === gameModel.state.turnPlayer)
-                  ?.userName ?? gameModel.state.turnPlayer === gameModel.state.p1
-                  ? 'Player 1'
-                  : 'Player 2'
+                  ?.userName ??
+                (gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2')
               }'s turn.`}
         </Text>
         <Button hidden={true}>Return</Button>
