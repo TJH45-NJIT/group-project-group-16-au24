@@ -184,6 +184,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (playerID !== this.state.p1 && playerID !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     if (board.length !== 10) throw new Error('Invalid board');
+    if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
+      this.state.internalState = 'GAME_MAIN';
+      this._updateExternalState();
+    }
   }
 
   /**
