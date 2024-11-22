@@ -152,7 +152,7 @@ export default class BattleShipAreaController extends GameAreaController<
       gameID: this._instanceID,
       move: initBoard,
     };
-    await this._townController.sendInteractableCommand(this._model.game.id, setupCommand);
+    await this._townController.sendInteractableCommand(this.id, setupCommand);
   }
 
   public async makeAttackMove(posX: number, posY: number) {
@@ -167,6 +167,6 @@ export default class BattleShipAreaController extends GameAreaController<
         posY: posY,
       },
     };
-    await this._townController.sendInteractableCommand(this._model.game.id, attackCommand);
+    await this._townController.sendInteractableCommand(this.id, attackCommand);
   }
 }
