@@ -105,10 +105,12 @@ export function BattleShipGameStartView({
           </Center>
         </StackDivider>
       ) : (
-        <Text>
-          The players are currently placing their ships. You will be able to watch the game when
-          they finish setting up!
-        </Text>
+        <Center>
+          <Text>
+            The players are currently placing their ships. You will be able to watch the game when
+            they finish setting up!
+          </Text>
+        </Center>
       )}
     </StackDivider>
   );

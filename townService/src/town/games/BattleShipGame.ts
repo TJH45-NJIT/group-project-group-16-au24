@@ -245,15 +245,15 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       sunkenShips = this.state.p1SunkenShips;
     }
     if (markerBoard[posX][posY] !== undefined) throw new Error(BOARD_POSITION_NOT_EMPTY_MESSAGE);
-    const hitShip = shipBoard[posX][posY];
+    const hitShip = shipBoard[posX as number][posY as number];
     if (hitShip === undefined) {
       // When the shot misses
-      markerBoard[posX][posY] = 'M';
+      markerBoard[posX as number][posY as number] = 'M';
       this.state.turnPlayer = opponentID;
     } else {
       // When the shot hits
-      markerBoard[posX][posY] = 'H';
-      shipBoard[posX][posY] = undefined;
+      markerBoard[posX as number][posY as number] = 'H';
+      shipBoard[posX as number][posY as number] = undefined;
       BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
         // When the game is won
