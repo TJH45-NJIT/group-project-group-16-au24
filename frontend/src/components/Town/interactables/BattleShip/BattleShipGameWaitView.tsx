@@ -1,8 +1,7 @@
-import { Button, Center, StackDivider, Text } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
+import React from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
-import useTownController from '../../../../hooks/useTownController';
 import {
   BattleShipGameState,
   GameInstance,
@@ -23,13 +22,27 @@ export function BattleShipGameWaitView({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
-  const isPlayer = useCallback((): boolean => {
-    return gameModel === undefined
-      ? false
-      : townController.ourPlayer.id === gameModel.state.p1 ||
-          townController.ourPlayer.id === gameModel.state.p2;
-  }, [gameModel, townController.ourPlayer.id]);
+  const toast = useToast();
+
+  async function onJoinButtonClick() {
+    try {
+      await gameAreaController.joinGame();
+    } catch (anyException) {
+      if (anyException instanceof Error) {
+        const error: Error = anyException;
+        toast({
+          description: error.message,
+          status: 'error',
+        });
+      } else {
+        toast({
+          description: 'An unexpected error occurred.',
+          status: 'error',
+        });
+      }
+    }
+  }
+
   return (
     <StackDivider>
       {/* Using separate Center components causes child components to be in separate rows. */}
@@ -39,7 +52,8 @@ export function BattleShipGameWaitView({
       <Center>
         <Button
           margin={BUTTON_MARGIN}
-          disabled={(gameModel?.players.length ?? 0) >= 2 || isPlayer()}>
+          disabled={(gameModel?.players.length ?? 0) >= 2 || gameAreaController.isPlayer}
+          onClick={onJoinButtonClick}>
           Join Game
         </Button>
       </Center>

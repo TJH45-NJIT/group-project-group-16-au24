@@ -1,4 +1,4 @@
-import { Button, Center, StackDivider, Text } from '@chakra-ui/react';
+import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
 import React, { useCallback, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
@@ -27,6 +27,7 @@ export function BattleShipGameStartView({
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
+  const toast = useToast();
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
   const [initialBoard] = useState<BattleShipBoardPiece[][]>([
@@ -64,6 +65,25 @@ export function BattleShipGameStartView({
     return townController.ourPlayer.id === gameModel.state.p1;
   }, [gameModel.state.p1, townController.ourPlayer.id]);
 
+  async function onSubmitButtonClick() {
+    try {
+      await gameAreaController.makeSetupMove(initialBoard);
+    } catch (anyException) {
+      if (anyException instanceof Error) {
+        const error: Error = anyException;
+        toast({
+          description: error.message,
+          status: 'error',
+        });
+      } else {
+        toast({
+          description: 'An unexpected error occurred.',
+          status: 'error',
+        });
+      }
+    }
+  }
+
   return (
     <Center>
       {isPlayer() ? (
@@ -79,7 +99,7 @@ export function BattleShipGameStartView({
             When you are ready to start the game, click the button below.
             <br />
           </Text>
-          <Button>Submit</Button>
+          <Button onClick={onSubmitButtonClick}>Submit</Button>
           <Text>
             {isP1()
               ? gameModel.state.p2InitialBoard.length === 0
