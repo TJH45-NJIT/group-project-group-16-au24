@@ -5,27 +5,66 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Text,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractable, useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
-import { InteractableID } from '../../../../types/CoveyTownSocket';
+import {
+  BattleShipGameState,
+  BattleShipGameStatus,
+  GameInstance,
+  InteractableID,
+} from '../../../../types/CoveyTownSocket';
 import GameAreaInteractable from '../GameArea';
-import { SampleBoard } from './BattleShipTemplates';
+import { BattleShipGameMainView } from './BattleShipGameMainView';
+import { BattleShipGameStartView } from './BattleShipGameStartView';
+import { BattleShipGameWaitView } from './BattleShipGameWaitView';
 
 function BattleShipArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
+  const [gameModel, setGameModel] = useState<GameInstance<BattleShipGameState>>();
+  const [internalState, setInternalState] = useState<BattleShipGameStatus>('GAME_WAIT');
+
+  useEffect(() => {
+    const deliverUpdatedModel = () => {
+      const gameModelRaw = gameAreaController.toInteractableAreaModel().game;
+      if (gameModelRaw !== undefined) {
+        setGameModel(gameModelRaw);
+        setInternalState(gameModelRaw.state.internalState);
+      }
+    };
+    gameAreaController.addListener('gameUpdated', deliverUpdatedModel);
+    return () => {
+      gameAreaController.removeListener('gameUpdated', deliverUpdatedModel);
+    };
+  }, [gameAreaController]);
+
   return (
     <div>
-      <p>
-        {gameAreaController.id} {townController.townID}
-      </p>
-      <Center>
-        <SampleBoard />
-      </Center>
+      {internalState === 'GAME_WAIT' ? (
+        <BattleShipGameWaitView
+          interactableID={interactableID}
+          gameModel={gameModel}></BattleShipGameWaitView>
+      ) : internalState === 'GAME_START' ? (
+        <BattleShipGameStartView
+          interactableID={interactableID}
+          gameModel={
+            gameModel as unknown as GameInstance<BattleShipGameState>
+          }></BattleShipGameStartView>
+      ) : internalState === 'GAME_MAIN' || internalState === 'GAME_END' ? (
+        <BattleShipGameMainView
+          interactableID={interactableID}
+          gameModel={
+            gameModel as unknown as GameInstance<BattleShipGameState>
+          }></BattleShipGameMainView>
+      ) : (
+        <Center>
+          <Text>An unexpected error occurred.</Text>
+        </Center>
+      )}
     </div>
   );
 }

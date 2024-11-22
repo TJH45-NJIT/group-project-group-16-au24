@@ -4,9 +4,9 @@ import { BattleShipBoardMarker, BattleShipBoardPiece } from '../../../../types/C
 const RESOURCE_PATH = '';
 
 interface BattleShipBoardProps {
-  initialBoard: BattleShipBoardPiece[][];
+  initialBoard: readonly (readonly BattleShipBoardPiece[])[];
   displayInitialBoard: boolean;
-  markerBoard: BattleShipBoardMarker[][];
+  markerBoard: readonly (readonly BattleShipBoardMarker[])[];
   width?: number;
   onCellClick?(x: number, y: number): void;
 }
