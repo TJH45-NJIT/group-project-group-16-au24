@@ -1,4 +1,10 @@
+import util from 'node:util';
 import InvalidParametersError, {
+  BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
+  BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
   BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
@@ -124,12 +130,97 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   }
 
   /**
+   * Throw an exception if the given ship is not placed correctly on the given initial board.
+   * Update the array of checked spots as they are scanned.
+   * Precondition: The first two spots for the ship have already been verified as correct,
+   * but those spots have not yet been updated in the array of checked spots.
+   * @param board The proposed initial board
+   * @param checkedSpots The array indicating which spots have already been verfied as correct
+   * @param piece The ship whose validity is to be verified
+   * @param x The x-coordinate of the top-left corner of the ship
+   * @param y The y-coordinate of the top-left corner of the ship
+   * @param isXAxis The axis being scanned along: true for x-axis, false for y-axis
+   */
+  private static _verifyShipValidity(
+    board: BattleShipBoardPiece[][],
+    checkedSpots: boolean[][],
+    piece: BattleShipBoardPiece,
+    x: number,
+    y: number,
+    isXAxis: boolean,
+  ): void {
+    const shipSizes = new Map<BattleShipBoardPiece, number>([
+      ['Destroyer', 2],
+      ['Submarine', 3],
+      ['Cruiser', 3],
+      ['Battleship', 4],
+      ['Carrier', 5],
+    ]);
+    checkedSpots[x][y] = true;
+    if (isXAxis) checkedSpots[x + 1][y] = true;
+    else checkedSpots[x][y + 1] = true;
+    const finalSpot = (isXAxis ? x : y) + (shipSizes.get(piece) ?? 0) - 1;
+    if (finalSpot >= 10)
+      throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
+    if (isXAxis)
+      for (let nextSpot = x + 2; nextSpot <= finalSpot; nextSpot++)
+        if (board[nextSpot][y] === piece) checkedSpots[nextSpot][y] = true;
+        else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
+    else
+      for (let nextSpot = y + 2; nextSpot <= finalSpot; nextSpot++)
+        if (board[x][nextSpot] === piece) checkedSpots[x][nextSpot] = true;
+        else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
+  }
+
+  /**
    * Handle player submission of their board setup during GAME_START and validate that the layout is legal.
    * Transition into GAME_MAIN after both players have submitted. Throw error if the board is not legal.
-   * @param player The player trying to leave.
+   * @param playerID The ID of the player submitting their initial board.
+   * @param board The initial board to be checked and, if legal, recorded.
    */
   protected _applySetupMove(playerID: PlayerID, board: BattleShipBoardPiece[][]): void {
-    throw new Error(`${this.id} ${playerID} ${board} Method not implemented.`);
+    if (playerID !== this.state.p1 && playerID !== this.state.p2)
+      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+    const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
+    const missingShips: BattleShipBoardPiece[] = [
+      'Destroyer',
+      'Submarine',
+      'Cruiser',
+      'Battleship',
+      'Carrier',
+    ];
+    // Scanning each spot to find the top-left corner of all placed ships
+    for (let x = 0; x < 10; x++)
+      for (let y = 0; y < 10; y++) {
+        const piece = board[x][y];
+        if (checkedSpots[x][y] !== true && piece !== undefined) {
+          if (!missingShips.includes(piece))
+            throw new Error(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, piece));
+          // Verifying ship correctness upon finding a new ship
+          if (x + 1 < 10 && board[x + 1][y] === piece)
+            BattleShipGame._verifyShipValidity(board, checkedSpots, piece, x, y, true);
+          else if (y + 1 < 10 && board[x][y + 1] === piece)
+            BattleShipGame._verifyShipValidity(board, checkedSpots, piece, x, y, false);
+          else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
+          missingShips.splice(
+            missingShips.findIndex(value => value === piece),
+            1,
+          );
+        }
+      }
+    if (missingShips.length !== 0)
+      throw new Error(
+        util.format(
+          BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+          missingShips.join(BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR),
+        ),
+      );
+    if (playerID === this.state.p1) this.state.p1InitialBoard = board;
+    else this.state.p2InitialBoard = board;
+    if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
+      this.state.internalState = 'GAME_MAIN';
+      this._updateExternalState();
+    }
   }
 
   /**
