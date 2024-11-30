@@ -9,6 +9,7 @@ import {
   BattleShipBoardPiece,
   NewGameCommand,
   GameInstance,
+  GameResult,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
@@ -30,6 +31,8 @@ export default class BattleShipAreaController extends GameAreaController<
   BattleShipGameState,
   BattleShipEvents
 > {
+  gameHistory: GameInstance<BattleShipGameState>[] = [];
+
   get ourShipBoard(): BattleShipBoardPiece[][] | undefined {
     if (this.isP2) {
       return this._model.game?.state.p2Board;
@@ -117,6 +120,15 @@ export default class BattleShipAreaController extends GameAreaController<
     return this._model.game?.state.internalState ?? 'GAME_WAIT';
   }
 
+  get leaderBoard(): GameResult[] {
+    const leaderBoard: GameResult[] = [];
+    for (let i = 0; i < this.gameHistory.length; i++) {
+      const result = this.gameHistory[i].result;
+      if (result) leaderBoard.push(result);
+    }
+    return leaderBoard;
+  }
+
   public isActive(): boolean {
     return this.status === 'IN_PROGRESS';
   }
@@ -145,11 +157,11 @@ export default class BattleShipAreaController extends GameAreaController<
     this.emit('turnChanged', this.isOurTurn);
   }
 
-  public async getHistory(): Promise<GameInstance<BattleShipGameState>[]> {
+  public async getHistory() {
     const { historyRecords } = await this._townController.sendInteractableCommand(this.id, {
       type: 'GetHistory',
     });
-    return historyRecords;
+    this.gameHistory = historyRecords;
   }
 
   public async resetGame() {
@@ -160,6 +172,7 @@ export default class BattleShipAreaController extends GameAreaController<
         type: 'NewGame',
         prevgameID: this._instanceID,
       };
+      this.getHistory();
       await this._townController.sendInteractableCommand(this.id, newGameCommand);
     }
   }
