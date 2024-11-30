@@ -29,6 +29,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     super({
       p1: undefined,
       p2: undefined,
+      p1Username: 'Player 1',
+      p2Username: 'Player 2',
       p1InitialBoard: [],
       p2InitialBoard: [],
       p1Board: [[], [], [], [], [], [], [], [], [], []],
@@ -225,6 +227,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
           this.state.p1Board[x][y] = this.state.p1InitialBoard[x][y];
           this.state.p2Board[x][y] = this.state.p2InitialBoard[x][y];
         }
+      this.state.p1Username =
+        this._players.find(value => value.id === this.state.p1)?.userName ?? 'Player 1';
+      this.state.p2Username =
+        this._players.find(value => value.id === this.state.p2)?.userName ?? 'Player 2';
       this.state.turnPlayer = this.state.p1;
       this.state.internalState = 'GAME_MAIN';
       this._updateExternalState();
