@@ -4,9 +4,14 @@ import {
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
+import {
+  BattleShipSetupMove, 
+  BattleShipAttackMove,
+  BattleShipBoardPiece,
+} from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
 
-describe('BattleShipGame', () => {
+describe('[T1] BattleShipGame', () => {
   let game: BattleShipGame;
 
   beforeEach(() => {
@@ -43,17 +48,13 @@ describe('BattleShipGame', () => {
         expect(game.state.winner).toBeUndefined();
       });
       describe('When the second player joins', () => {
-        const player1 = createPlayerForTesting();
-        const player2 = createPlayerForTesting();
-        beforeEach(() => {
+        it('makes the second player p2 and sets the game status to IN_PROGRESS', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
           game.join(player1);
           game.join(player2);
-        });
-        it('makes the second player p2', () => {
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toEqual(player2.id);
-        });
-        it('sets the game status to IN_PROGRESS', () => {
           expect(game.state.internalState).toEqual('GAME_START');
           expect(game.state.status).toEqual('IN_PROGRESS');
           expect(game.state.winner).toBeUndefined();
@@ -90,11 +91,13 @@ describe('BattleShipGame', () => {
         });
       });
       describe('when the game is in the setup stage, it should reset itself to inital parameters', () => {
-        test('when p1 leaves', () => {
-          const player1 = createPlayerForTesting();
-          const player2 = createPlayerForTesting();
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        beforeEach(() => {
           game.join(player1);
           game.join(player2);
+        });
+        test('when p1 leaves', () => {
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toEqual(player2.id);
 
@@ -107,10 +110,6 @@ describe('BattleShipGame', () => {
           expect(game.state.p2).toBeUndefined();
         });
         test('when p2 leaves', () => {
-          const player1 = createPlayerForTesting();
-          const player2 = createPlayerForTesting();
-          game.join(player1);
-          game.join(player2);
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toEqual(player2.id);
 
@@ -121,6 +120,76 @@ describe('BattleShipGame', () => {
           expect(game.state.winner).toBeUndefined();
           expect(game.state.p1).toEqual(player1.id);
           expect(game.state.p2).toBeUndefined();
+        });
+      });
+      describe('when the game is in the main gameplay stage, it should end the game and set the remaining player as the winner', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        const p1Board: BattleShipBoardPiece[][] = [
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
+          [    undefined,    'Carrier',    undefined,    undefined,    undefined,  'Submarine',  'Submarine',  'Submarine',    undefined,  'Destroyer' ],
+          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [ 'Battleship', 'Battleship', 'Battleship', 'Battleship',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+        ];
+        const p2Board: BattleShipBoardPiece[][] = [
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    'Cruiser',    'Cruiser',    undefined ],
+          [  'Destroyer',  'Destroyer',    undefined,    undefined,    undefined,    undefined,    undefined, 'Battleship',    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined, 'Battleship',    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined, 'Battleship',    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined, 'Battleship',    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    'Carrier',    'Carrier',    'Carrier',    'Carrier',    'Carrier',    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+        ];
+        beforeEach(() => {
+          game.join(player1);
+          game.join(player2);
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+        });
+        test('when p1 leaves', () => {
+          expect(game.state.p1).toEqual(player1.id);
+          expect(game.state.p2).toEqual(player2.id);
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.status).toEqual('IN_PROGRESS');
+
+          game.leave(player1);
+
+          expect(game.state.internalState).toEqual('GAME_END');
+          expect(game.state.status).toEqual('OVER');
+          expect(game.state.winner).toEqual(player2.id);
+          expect(game.state.p1).toEqual(player1.id);
+          expect(game.state.p2).toEqual(player2.id);
+        });
+        test('when p2 leaves', () => {
+          expect(game.state.p1).toEqual(player1.id);
+          expect(game.state.p2).toEqual(player2.id);
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.status).toEqual('IN_PROGRESS');
+
+          game.leave(player2);
+
+          expect(game.state.internalState).toEqual('GAME_END');
+          expect(game.state.status).toEqual('OVER');
+          expect(game.state.winner).toEqual(player1.id);
+          expect(game.state.p1).toEqual(player1.id);
+          expect(game.state.p2).toEqual(player2.id);
         });
       });
     });
