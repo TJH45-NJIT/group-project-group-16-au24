@@ -7,6 +7,8 @@ import {
   BattleShipGameState,
   BattleShipBoardMarker,
   BattleShipBoardPiece,
+  NewGameCommand,
+  GameInstance,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
@@ -141,6 +143,25 @@ export default class BattleShipAreaController extends GameAreaController<
       }
     }
     this.emit('turnChanged', this.isOurTurn);
+  }
+
+  public async getHistory(): Promise<GameInstance<BattleShipGameState>[]> {
+    const { HistoryRecords } = await this._townController.sendInteractableCommand(this.id, {
+      type: 'GetHistory',
+    });
+    return HistoryRecords;
+  }
+
+  public async resetGame() {
+    if (this._model.game === undefined || this._instanceID === undefined || !this.isActive())
+      throw new Error(NO_GAME_IN_PROGRESS_ERROR);
+    if (this.internalState == 'GAME_END') {
+      const newGameCommand: NewGameCommand = {
+        type: 'NewGame',
+        prevgameID: this._instanceID,
+      };
+      await this._townController.sendInteractableCommand(this.id, newGameCommand);
+    }
   }
 
   public async makeSetupMove(initBoard: BattleShipBoardPiece[][]) {
