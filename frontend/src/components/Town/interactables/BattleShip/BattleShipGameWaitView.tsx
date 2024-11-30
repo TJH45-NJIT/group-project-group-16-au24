@@ -19,7 +19,6 @@ export function BattleShipGameWaitView({
   interactableID,
   gameModel,
 }: BattleShipGameWaitViewProps): JSX.Element {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const toast = useToast();
