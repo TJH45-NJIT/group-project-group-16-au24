@@ -1,5 +1,5 @@
 import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import {
@@ -25,6 +25,7 @@ export function BattleShipGameStartView({
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const toast = useToast();
+  const [mounted, setMounted] = useState<boolean>(false); // Prevents a memory leak warning
   const [changesSubmitted, setChangesSubmitted] = useState<boolean>(false);
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
@@ -52,24 +53,33 @@ export function BattleShipGameStartView({
   ]);
 
   async function onSubmitButtonClick() {
-    try {
-      await gameAreaController.makeSetupMove(initialBoard);
-      setChangesSubmitted(true);
-    } catch (anyException) {
-      if (anyException instanceof Error) {
-        const error: Error = anyException;
-        toast({
-          description: error.message,
-          status: 'error',
-        });
-      } else {
-        toast({
-          description: 'An unexpected error occurred.',
-          status: 'error',
-        });
+    if (mounted) {
+      try {
+        await gameAreaController.makeSetupMove(initialBoard);
+        setChangesSubmitted(true);
+      } catch (anyException) {
+        if (anyException instanceof Error) {
+          const error: Error = anyException;
+          toast({
+            description: error.message,
+            status: 'error',
+          });
+        } else {
+          toast({
+            description: 'An unexpected error occurred.',
+            status: 'error',
+          });
+        }
       }
     }
   }
+
+  useEffect(() => {
+    setMounted(true);
+    return () => {
+      setMounted(false);
+    };
+  }, []);
 
   return (
     <StackDivider>
