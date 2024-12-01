@@ -1,8 +1,7 @@
 import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
-import useTownController from '../../../../hooks/useTownController';
 import {
   BattleShipBoardPiece,
   BattleShipGameState,
@@ -23,12 +22,10 @@ export function BattleShipGameStartView({
   interactableID,
   gameModel,
 }: BattleShipGameStartViewProps): JSX.Element {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toast = useToast();
+  const [changesSubmitted, setChangesSubmitted] = useState<boolean>(false);
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
   const [initialBoard] = useState<BattleShipBoardPiece[][]>([
@@ -54,31 +51,36 @@ export function BattleShipGameStartView({
     [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
   ]);
 
-  // Temporary functions to be replaced with BattleShipAreaController
-  // equivalents when that becomes available:
-  const isPlayer = useCallback((): boolean => {
-    return (
-      townController.ourPlayer.id === gameModel.state.p1 ||
-      townController.ourPlayer.id === gameModel.state.p2
-    );
-  }, [gameModel.state.p1, gameModel.state.p2, townController.ourPlayer.id]);
-  const isP1 = useCallback((): boolean => {
-    return townController.ourPlayer.id === gameModel.state.p1;
-  }, [gameModel.state.p1, townController.ourPlayer.id]);
-
   async function onSubmitButtonClick() {
-    await gameAreaController.makeSetupMove(initialBoard);
+    try {
+      await gameAreaController.makeSetupMove(initialBoard);
+      setChangesSubmitted(true);
+    } catch (anyException) {
+      if (anyException instanceof Error) {
+        const error: Error = anyException;
+        toast({
+          description: error.message,
+          status: 'error',
+        });
+      } else {
+        toast({
+          description: 'An unexpected error occurred.',
+          status: 'error',
+        });
+      }
+    }
   }
 
   return (
     <StackDivider>
-      {isPlayer() ? (
+      {gameAreaController.isPlayer ? (
         <StackDivider>
           <Center>
             <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
               initialBoard={initialBoard}
               displayInitialBoard={true}
-              markerBoard={[]}></BattleShipBoard>
+              markerBoard={[]}
+            />
           </Center>
           <Center>
             <Text>
@@ -90,11 +92,13 @@ export function BattleShipGameStartView({
             </Text>
           </Center>
           <Center>
-            <Button onClick={onSubmitButtonClick}>Submit</Button>
+            <Button onClick={onSubmitButtonClick} disabled={changesSubmitted}>
+              Submit
+            </Button>
           </Center>
           <Center>
             <Text>
-              {isP1()
+              {gameAreaController.isP1
                 ? gameModel.state.p2InitialBoard.length === 0
                   ? OPPONENT_NOT_READY_TEXT
                   : OPPONENT_READY_TEXT
