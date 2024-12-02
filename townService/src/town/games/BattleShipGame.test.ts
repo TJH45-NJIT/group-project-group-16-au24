@@ -1,14 +1,18 @@
+import util from 'node:util';
 import { createPlayerForTesting } from '../../TestUtils';
 import {
+  BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
-import {
-  BattleShipSetupMove, 
-  BattleShipAttackMove,
-  BattleShipBoardPiece,
-} from '../../types/CoveyTownSocket';
+import { BattleShipBoardPiece } from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
 
 describe('[T1] BattleShipGame', () => {
@@ -125,29 +129,127 @@ describe('[T1] BattleShipGame', () => {
       describe('when the game is in the main gameplay stage, it should end the game and set the remaining player as the winner', () => {
         const player1 = createPlayerForTesting();
         const player2 = createPlayerForTesting();
-        const p1Board: BattleShipBoardPiece[][] = [
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
-          [    undefined,    'Carrier',    undefined,    undefined,    undefined,  'Submarine',  'Submarine',  'Submarine',    undefined,  'Destroyer' ],
-          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-          [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [ 'Battleship', 'Battleship', 'Battleship', 'Battleship',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-        ];
-        const p2Board: BattleShipBoardPiece[][] = [
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    'Cruiser',    'Cruiser',    undefined ],
-          [  'Destroyer',  'Destroyer',    undefined,    undefined,    undefined,    undefined,    undefined, 'Battleship',    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined, 'Battleship',    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined, 'Battleship',    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined, 'Battleship',    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,  'Submarine',    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    'Carrier',    'Carrier',    'Carrier',    'Carrier',    'Carrier',    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-          [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+        const validBoard: BattleShipBoardPiece[][] = [
+          [
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            'Destroyer',
+          ],
+          [
+            undefined,
+            'Carrier',
+            undefined,
+            undefined,
+            undefined,
+            'Submarine',
+            'Submarine',
+            'Submarine',
+            undefined,
+            'Destroyer',
+          ],
+          [
+            undefined,
+            'Carrier',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            'Carrier',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            'Carrier',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            'Cruiser',
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            'Carrier',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            'Cruiser',
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            'Cruiser',
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            'Battleship',
+            'Battleship',
+            'Battleship',
+            'Battleship',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ],
+          [
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ],
         ];
         beforeEach(() => {
           game.join(player1);
@@ -155,12 +257,12 @@ describe('[T1] BattleShipGame', () => {
           game.applyMove({
             playerID: player1.id,
             gameID: game.id,
-            move: p1Board,
+            move: validBoard,
           });
           game.applyMove({
             playerID: player2.id,
             gameID: game.id,
-            move: p2Board,
+            move: validBoard,
           });
         });
         test('when p1 leaves', () => {
@@ -194,5 +296,624 @@ describe('[T1] BattleShipGame', () => {
       });
     });
     // TODO Create _leave tests for after the setup phase is finished, requires complete applyMove
+  });
+
+  describe('[T1.3] _applyMove', () => {
+    function placeShip(
+      board: BattleShipBoardPiece[][],
+      ship: BattleShipBoardPiece,
+      pos: number,
+      orntDown: boolean,
+    ) {
+      let xPos = Math.floor(Math.abs(pos % 10));
+      let yPos = Math.floor(Math.abs((pos / 10) % 10));
+      let i;
+      let g = 5;
+      if (ship === 'Battleship') {
+        g = 4;
+      } else if (ship === 'Cruiser' || ship === 'Submarine') {
+        g = 3;
+      } else if (ship === 'Destroyer') {
+        g = 2;
+      }
+      for (i = 0; i < g; i++) {
+        if (orntDown) {
+          if (yPos > 9) {
+            throw new Error(`${yPos} Not a valid postion`);
+          }
+          if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
+            throw new Error(`${pos} Postion Conflict`);
+          }
+          board[yPos][xPos] = ship;
+          yPos++;
+        } else {
+          if (xPos > 9) {
+            throw new Error(`${xPos} Not a valid postion`);
+          }
+          if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
+            throw new Error(`${pos} Postion Conflict`);
+          }
+          board[yPos][xPos] = ship;
+          xPos++;
+        }
+      }
+    }
+
+    function generateSetupBoard(
+      carPos: number,
+      carOrnt: boolean,
+      batPos: number,
+      batOrnt: boolean,
+      cruPos: number,
+      cruOrnt: boolean,
+      subPos: number,
+      subOrnt: boolean,
+      desPos: number,
+      desOrnt: boolean,
+    ) {
+      const retBoard: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
+      placeShip(retBoard, 'Carrier', carPos, carOrnt);
+      placeShip(retBoard, 'Battleship', batPos, batOrnt);
+      placeShip(retBoard, 'Cruiser', cruPos, cruOrnt);
+      placeShip(retBoard, 'Submarine', subPos, subOrnt);
+      placeShip(retBoard, 'Destroyer', desPos, desOrnt);
+      return retBoard;
+    }
+
+    describe('_applySetupMove', () => {
+      describe('when given an setup move before game start', () => {
+        it('should throw a GAME_NOT_IN_PROGRESS_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const validBoard: BattleShipBoardPiece[][] = generateSetupBoard(
+            11,
+            true,
+            80,
+            false,
+            46,
+            true,
+            15,
+            false,
+            9,
+            true,
+          );
+          game.join(player1);
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: validBoard,
+            }),
+          ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
+        });
+      });
+
+      describe('when given a setup move by a non-player', () => {
+        it('should throw a PLAYER_NOT_IN_GAME_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          const player3 = createPlayerForTesting();
+          const validBoard: BattleShipBoardPiece[][] = generateSetupBoard(
+            11,
+            true,
+            80,
+            false,
+            46,
+            true,
+            15,
+            false,
+            9,
+            true,
+          );
+          game.join(player1);
+          game.join(player2);
+          expect(() =>
+            game.applyMove({
+              playerID: player3.id,
+              gameID: game.id,
+              move: validBoard,
+            }),
+          ).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
+        });
+      });
+
+      describe('when given an invalid setup', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        const validBoard: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        const invalidBoard1: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        placeShip(invalidBoard1, 'Submarine', 58, true);
+        const invalidBoard2: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        invalidBoard2[1][1] = undefined;
+        const invalidBoard3: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        invalidBoard3[8][4] = 'Battleship';
+        const invalidBoard4: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        invalidBoard4[0][9] = undefined;
+        invalidBoard4[1][9] = undefined;
+        const invalidBoard5: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
+        placeShip(invalidBoard5, 'Submarine', 58, true);
+        const invalidBoard6: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          86,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        invalidBoard6[8][6] = undefined;
+        invalidBoard6[8][10] = 'Battleship';
+        beforeEach(() => {
+          game.join(player1);
+          game.join(player2);
+        });
+        test('when p1 makes a setup move with a dublicate ship, should throw DUPLICATE error', () => {
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: invalidBoard1,
+            }),
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, 'Submarine'));
+        });
+        test('when p2 makes a setup move with a ship too small, should throw INCOMPLETE error', () => {
+          expect(() =>
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: invalidBoard2,
+            }),
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, 'Carrier'));
+        });
+        test('when p2 makes a setup move with a ship too big, should throw DUPLICATE error', () => {
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: validBoard,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: invalidBoard3,
+            }),
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, 'Battleship'));
+        });
+        test('when p1 makes a setup move with a missing ship, should throw MISSING error', () => {
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: validBoard,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: invalidBoard4,
+            }),
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE, 'Destroyer'));
+        });
+        test('when p2 makes a setup move with mutiple missing ships, should throw MISSING error', () => {
+          expect(() =>
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: invalidBoard5,
+            }),
+          ).toThrowError(
+            util.format(
+              BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+              'Destroyer, Cruiser, Battleship, Carrier',
+            ),
+          );
+        });
+        test('when p1 makes a setup move with a ship out of bounds, should throw NOT_ENOUGH_SPACE error', () => {
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: invalidBoard6,
+            }),
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, 'Battleship'));
+        });
+      });
+
+      describe('when given an multiple setup moves by the same player', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        const validBoard1: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
+        const validBoard2: BattleShipBoardPiece[][] = generateSetupBoard(
+          64,
+          false,
+          17,
+          true,
+          6,
+          false,
+          34,
+          true,
+          10,
+          false,
+        );
+        const emptyBoard: BattleShipBoardPiece[][] = [];
+        beforeEach(() => {
+          game.join(player1);
+          game.join(player2);
+        });
+        test('when p1 makes two setup moves back to back in the setup phase, should throw an error', () => {
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: validBoard1,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: validBoard2,
+            }),
+          ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
+          expect(game.state.p1InitialBoard).toEqual(validBoard1);
+          expect(game.state.p2InitialBoard).toEqual(emptyBoard);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
+        });
+        test('when p1 makes a setup move during the setup phase and again during the main game phase, should throw an error', () => {
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: validBoard1,
+          });
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: validBoard1,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: validBoard2,
+            }),
+          ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.p1InitialBoard).toEqual(validBoard1);
+          expect(game.state.p2InitialBoard).toEqual(validBoard1);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
+        });
+        test('when p2 makes a setup move during the setup phase and again during the main game phase, should throw an error', () => {
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: validBoard1,
+          });
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: validBoard1,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(() =>
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: validBoard2,
+            }),
+          ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.p1InitialBoard).toEqual(validBoard1);
+          expect(game.state.p2InitialBoard).toEqual(validBoard1);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
+        });
+      });
+
+      describe('when given valid setups', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        beforeEach(() => {
+          game.join(player1);
+          game.join(player2);
+        });
+        test('valid setup #1', () => {
+          const validBoard: BattleShipBoardPiece[][] = generateSetupBoard(
+            11,
+            true,
+            80,
+            false,
+            46,
+            true,
+            15,
+            false,
+            9,
+            true,
+          );
+          const validBoardCopy: BattleShipBoardPiece[][] = [
+            [
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              'Destroyer',
+            ],
+            [
+              undefined,
+              'Carrier',
+              undefined,
+              undefined,
+              undefined,
+              'Submarine',
+              'Submarine',
+              'Submarine',
+              undefined,
+              'Destroyer',
+            ],
+            [
+              undefined,
+              'Carrier',
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              'Carrier',
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              'Carrier',
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              'Cruiser',
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              'Carrier',
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              'Cruiser',
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              'Cruiser',
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              'Battleship',
+              'Battleship',
+              'Battleship',
+              'Battleship',
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ],
+            [
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ],
+          ];
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: validBoard,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: validBoard,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.p1InitialBoard).toEqual(validBoardCopy);
+          expect(game.state.p2InitialBoard).toEqual(validBoardCopy);
+        });
+        test('valid setup #2', () => {
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            50,
+            true,
+            61,
+            true,
+            72,
+            true,
+            73,
+            true,
+            84,
+            true,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            5,
+            false,
+            16,
+            false,
+            27,
+            false,
+            37,
+            false,
+            48,
+            false,
+          );
+          expect(game.state.internalState).toEqual('GAME_START');
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.p1InitialBoard).toEqual(p1Board);
+          expect(game.state.p2InitialBoard).toEqual(p2Board);
+        });
+        test('valid setup #3', () => {
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            57,
+            true,
+            45,
+            false,
+            55,
+            true,
+            58,
+            true,
+            56,
+            true,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            10,
+            true,
+            11,
+            false,
+            51,
+            false,
+            34,
+            true,
+            23,
+            false,
+          );
+          expect(game.state.internalState).toEqual('GAME_START');
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.p1InitialBoard).toEqual(p1Board);
+          expect(game.state.p2InitialBoard).toEqual(p2Board);
+        });
+      });
+    });
   });
 });
