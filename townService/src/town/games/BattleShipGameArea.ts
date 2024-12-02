@@ -162,7 +162,7 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
             gameID: this.gameHistory[i].id,
             scores: {
               [p1]: this.gameHistory[i].state.p2SunkenShips.length,
-              [p1]: this.gameHistory[i].state.p2SunkenShips.length,
+              [p2]: this.gameHistory[i].state.p1SunkenShips.length,
             },
           },
         });

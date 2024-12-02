@@ -120,13 +120,13 @@ export default class BattleShipAreaController extends GameAreaController<
     return this._model.game?.state.internalState ?? 'GAME_WAIT';
   }
 
-  get leaderBoard(): GameResult[] {
-    const leaderBoard: GameResult[] = [];
+  get leaderboard(): GameResult[] {
+    const leaderboard: GameResult[] = [];
     for (let i = 0; i < this.gameHistory.length; i++) {
       const result = this.gameHistory[i].result;
-      if (result) leaderBoard.push(result);
+      if (result) leaderboard.push(result);
     }
-    return leaderBoard;
+    return leaderboard;
   }
 
   public isActive(): boolean {
