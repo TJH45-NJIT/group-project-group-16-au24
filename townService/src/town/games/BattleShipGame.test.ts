@@ -14,6 +14,7 @@ import {
 } from '../../lib/InvalidParametersError';
 import { BattleShipBoardPiece } from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
+import Player from '../../lib/Player';
 
 describe('[T1] BattleShipGame', () => {
   let game: BattleShipGame;
@@ -377,6 +378,8 @@ describe('[T1] BattleShipGame', () => {
             true,
           );
           game.join(player1);
+          expect(game.state.internalState).toEqual('GAME_WAIT');
+          expect(game.state.status).toEqual('WAITING_TO_START');
           expect(() =>
             game.applyMove({
               playerID: player1.id,
@@ -504,7 +507,7 @@ describe('[T1] BattleShipGame', () => {
           game.join(player1);
           game.join(player2);
         });
-        test('when p1 makes a setup move with a dublicate ship, should throw DUPLICATE error', () => {
+        test('when p1 makes a setup move with a dublicate ship, should throw a DUPLICATE error', () => {
           expect(() =>
             game.applyMove({
               playerID: player1.id,
@@ -513,7 +516,7 @@ describe('[T1] BattleShipGame', () => {
             }),
           ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, 'Submarine'));
         });
-        test('when p2 makes a setup move with a ship too small, should throw INCOMPLETE error', () => {
+        test('when p2 makes a setup move with a ship too small, should throw a INCOMPLETE error', () => {
           expect(() =>
             game.applyMove({
               playerID: player2.id,
@@ -522,7 +525,7 @@ describe('[T1] BattleShipGame', () => {
             }),
           ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, 'Carrier'));
         });
-        test('when p2 makes a setup move with a ship too big, should throw DUPLICATE error', () => {
+        test('when p2 makes a setup move with a ship too big, should throw a DUPLICATE error', () => {
           game.applyMove({
             playerID: player1.id,
             gameID: game.id,
@@ -536,7 +539,7 @@ describe('[T1] BattleShipGame', () => {
             }),
           ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, 'Battleship'));
         });
-        test('when p1 makes a setup move with a missing ship, should throw MISSING error', () => {
+        test('when p1 makes a setup move with a missing ship, should throw a MISSING error', () => {
           game.applyMove({
             playerID: player2.id,
             gameID: game.id,
@@ -550,7 +553,7 @@ describe('[T1] BattleShipGame', () => {
             }),
           ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE, 'Destroyer'));
         });
-        test('when p2 makes a setup move with mutiple missing ships, should throw MISSING error', () => {
+        test('when p2 makes a setup move with mutiple missing ships, should throw a MISSING error', () => {
           expect(() =>
             game.applyMove({
               playerID: player2.id,
@@ -564,7 +567,7 @@ describe('[T1] BattleShipGame', () => {
             ),
           );
         });
-        test('when p1 makes a setup move with a ship out of bounds, should throw NOT_ENOUGH_SPACE error', () => {
+        test('when p1 makes a setup move with a ship out of bounds, should throw a NOT_ENOUGH_SPACE error', () => {
           expect(() =>
             game.applyMove({
               playerID: player1.id,
@@ -602,7 +605,7 @@ describe('[T1] BattleShipGame', () => {
           10,
           false,
         );
-        const emptyBoard: BattleShipBoardPiece[][] = [];
+        const emptyBoard: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
         beforeEach(() => {
           game.join(player1);
           game.join(player2);
@@ -621,7 +624,6 @@ describe('[T1] BattleShipGame', () => {
             }),
           ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
           expect(game.state.p1InitialBoard).toEqual(validBoard1);
-          expect(game.state.p2InitialBoard).toEqual(emptyBoard);
           expect(game.state.p1Board).toEqual(emptyBoard);
           expect(game.state.p2Board).toEqual(emptyBoard);
         });
@@ -647,8 +649,8 @@ describe('[T1] BattleShipGame', () => {
           expect(game.state.internalState).toEqual('GAME_MAIN');
           expect(game.state.p1InitialBoard).toEqual(validBoard1);
           expect(game.state.p2InitialBoard).toEqual(validBoard1);
-          expect(game.state.p1Board).toEqual(emptyBoard);
-          expect(game.state.p2Board).toEqual(emptyBoard);
+          expect(game.state.p1Board).toEqual(validBoard1);
+          expect(game.state.p2Board).toEqual(validBoard1);
         });
         test('when p2 makes a setup move during the setup phase and again during the main game phase, should throw an error', () => {
           game.applyMove({
@@ -672,14 +674,15 @@ describe('[T1] BattleShipGame', () => {
           expect(game.state.internalState).toEqual('GAME_MAIN');
           expect(game.state.p1InitialBoard).toEqual(validBoard1);
           expect(game.state.p2InitialBoard).toEqual(validBoard1);
-          expect(game.state.p1Board).toEqual(emptyBoard);
-          expect(game.state.p2Board).toEqual(emptyBoard);
+          expect(game.state.p1Board).toEqual(validBoard1);
+          expect(game.state.p2Board).toEqual(validBoard1);
         });
       });
 
       describe('when given valid setups', () => {
         const player1 = createPlayerForTesting();
         const player2 = createPlayerForTesting();
+        const emptyBoard: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
         beforeEach(() => {
           game.join(player1);
           game.join(player2);
@@ -819,19 +822,27 @@ describe('[T1] BattleShipGame', () => {
               undefined,
             ],
           ];
+          expect(game.state.internalState).toEqual('GAME_START');
+          expect(game.state.status).toEqual('IN_PROGRESS');
           game.applyMove({
             playerID: player1.id,
             gameID: game.id,
             move: validBoard,
           });
+          expect(game.state.p1InitialBoard).toEqual(validBoardCopy);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
           game.applyMove({
             playerID: player2.id,
             gameID: game.id,
             move: validBoard,
           });
           expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.status).toEqual('IN_PROGRESS');
           expect(game.state.p1InitialBoard).toEqual(validBoardCopy);
           expect(game.state.p2InitialBoard).toEqual(validBoardCopy);
+          expect(game.state.p1Board).toEqual(validBoardCopy);
+          expect(game.state.p2Board).toEqual(validBoardCopy);
         });
         test('valid setup #2', () => {
           const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
@@ -859,19 +870,26 @@ describe('[T1] BattleShipGame', () => {
             false,
           );
           expect(game.state.internalState).toEqual('GAME_START');
+          expect(game.state.status).toEqual('IN_PROGRESS');
           game.applyMove({
             playerID: player1.id,
             gameID: game.id,
             move: p1Board,
           });
+          expect(game.state.p1InitialBoard).toEqual(p1Board);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
           game.applyMove({
             playerID: player2.id,
             gameID: game.id,
             move: p2Board,
           });
           expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.status).toEqual('IN_PROGRESS');
           expect(game.state.p1InitialBoard).toEqual(p1Board);
           expect(game.state.p2InitialBoard).toEqual(p2Board);
+          expect(game.state.p1Board).toEqual(p1Board);
+          expect(game.state.p2Board).toEqual(p2Board);
         });
         test('valid setup #3', () => {
           const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
@@ -899,6 +917,266 @@ describe('[T1] BattleShipGame', () => {
             false,
           );
           expect(game.state.internalState).toEqual('GAME_START');
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          expect(game.state.p2InitialBoard).toEqual(p2Board);
+          expect(game.state.p1Board).toEqual(emptyBoard);
+          expect(game.state.p2Board).toEqual(emptyBoard);
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          expect(game.state.internalState).toEqual('GAME_MAIN');
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          expect(game.state.p1InitialBoard).toEqual(p1Board);
+          expect(game.state.p2InitialBoard).toEqual(p2Board);
+          expect(game.state.p1Board).toEqual(p1Board);
+          expect(game.state.p2Board).toEqual(p2Board);
+        });
+      });
+    });
+
+    describe('_applyAttackMove', () => {
+      describe('when given an attack move before game has started', () => {
+        it('should throw a GAME_NOT_IN_PROGRESS_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          game.join(player1);
+          expect(game.state.internalState).toEqual('GAME_WAIT');
+          expect(game.state.status).toEqual('WAITING_TO_START');
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
+        });
+      });
+
+      describe('when given an attack move during the Setup phase', () => {
+        it('should throw a GAME_NOT_IN_PROGRESS_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          expect(game.state.internalState).toEqual('GAME_START');
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
+        });
+      });
+
+      describe('when given an attack move from not the turnPlayer player', () => {
+        it('should throw a MOVE_NOT_YOUR_TURN_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            16,
+            true,
+            22,
+            false,
+            43,
+            false,
+            65,
+            true,
+            57,
+            false,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            52,
+            false,
+            23,
+            false,
+            11,
+            true,
+            61,
+            true,
+            69,
+            true,
+          );
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
+        });
+      });
+
+      describe('when given an attack move from an outside player', () => {
+        it('should throw a PLAYER_NOT_IN_GAME_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          const player3 = createPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            16,
+            true,
+            22,
+            false,
+            43,
+            false,
+            65,
+            true,
+            57,
+            false,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            52,
+            false,
+            23,
+            false,
+            11,
+            true,
+            61,
+            true,
+            69,
+            true,
+          );
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player3.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
+        });
+      });
+
+      describe('when given an out of bounds attack move', () => {
+        it('should throw an error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            16,
+            true,
+            22,
+            false,
+            43,
+            false,
+            65,
+            true,
+            57,
+            false,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            52,
+            false,
+            23,
+            false,
+            11,
+            true,
+            61,
+            true,
+            69,
+            true,
+          );
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: 10,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE); // TODO May need specific error message
+        });
+      });
+
+      describe('when given an attack move on a previously attack spot', () => {
+        it('should throw a BOARD_POSITION_NOT_EMPTY_MESSAGE error', () => {
+          const player1 = createPlayerForTesting();
+          const player2 = createPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            16,
+            true,
+            22,
+            false,
+            43,
+            false,
+            65,
+            true,
+            57,
+            false,
+          );
+          const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+            52,
+            false,
+            23,
+            false,
+            11,
+            true,
+            61,
+            true,
+            69,
+            true,
+          );
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: p1Board,
+          });
           game.applyMove({
             playerID: player2.id,
             gameID: game.id,
@@ -907,11 +1185,210 @@ describe('[T1] BattleShipGame', () => {
           game.applyMove({
             playerID: player1.id,
             gameID: game.id,
+            move: {
+              posX: 1,
+              posY: 2,
+            },
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: {
+              posX: 3,
+              posY: 4,
+            },
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+        });
+      });
+
+      describe('valid game', () => {
+        let player1: Player;
+        let player2: Player;
+        const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
+          16,
+          true,
+          22,
+          false,
+          43,
+          false,
+          65,
+          true,
+          57,
+          false,
+        );
+        const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+          52,
+          false,
+          23,
+          false,
+          11,
+          true,
+          61,
+          true,
+          69,
+          true,
+        );
+        let p1SunkShips: BattleShipBoardPiece[];
+        let p1CarrierHp: number;
+        let p1BattleshipHp: number;
+        let p1CruiserHp: number;
+        let p1SubmarineHp: number;
+        let p1DestroyerHp: number;
+        let p2SunkShips: BattleShipBoardPiece[];
+        let p2CarrierHp: number;
+        let p2BattleshipHp: number;
+        let p2CruiserHp: number;
+        let p2SubmarineHp: number;
+        let p2DestroyerHp: number;
+        beforeEach(() => {
+          player1 = createPlayerForTesting();
+          player2 = createPlayerForTesting();
+          p1SunkShips = [];
+          p2SunkShips = [];
+          p1CarrierHp = 5;
+          p2CarrierHp = 5;
+          p1BattleshipHp = 4;
+          p2BattleshipHp = 4;
+          p1CruiserHp = 3;
+          p2CruiserHp = 3;
+          p1SubmarineHp = 3;
+          p2SubmarineHp = 3;
+          p1DestroyerHp = 2;
+          p2DestroyerHp = 2;
+          game.join(player1);
+          game.join(player2);
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
             move: p1Board,
           });
-          expect(game.state.internalState).toEqual('GAME_MAIN');
-          expect(game.state.p1InitialBoard).toEqual(p1Board);
-          expect(game.state.p2InitialBoard).toEqual(p2Board);
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: p2Board,
+          });
+        });
+        function makeAttackandCheckResult(
+          row: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
+          col: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
+          player: 'p1' | 'p2',
+          expectedResult: 'H' | 'M',
+        ) {
+          if (player === 'p1') {
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: col,
+                posY: row,
+              },
+            });
+            expect(game.state.p2MarkerBoard[row][col]).toEqual(expectedResult);
+            if (game.state.p2MarkerBoard[row][col] === 'H') {
+              switch (game.state.p2InitialBoard[row][col]) {
+                case 'Carrier':
+                  p2CarrierHp--;
+                  if (p2CarrierHp === 0) p2SunkShips.push('Carrier');
+                  break;
+                case 'Battleship':
+                  p2BattleshipHp--;
+                  if (p2BattleshipHp === 0) p2SunkShips.push('Battleship');
+                  break;
+                case 'Cruiser':
+                  p2CruiserHp--;
+                  if (p2CruiserHp === 0) p2SunkShips.push('Cruiser');
+                  break;
+                case 'Submarine':
+                  p2SubmarineHp--;
+                  if (p2SubmarineHp === 0) p2SunkShips.push('Submarine');
+                  break;
+                case 'Destroyer':
+                  p2DestroyerHp--;
+                  if (p2DestroyerHp === 0) p2SunkShips.push('Destroyer');
+                  break;
+                default:
+                  break;
+              }
+              expect(game.state.p2SunkenShips).toEqual(p2SunkShips);
+            }
+          } else {
+            game.applyMove({
+              playerID: player2.id,
+              gameID: game.id,
+              move: {
+                posX: col,
+                posY: row,
+              },
+            });
+            expect(game.state.p1MarkerBoard[row][col]).toEqual(expectedResult);
+            if (game.state.p1MarkerBoard[row][col] === 'H') {
+              switch (game.state.p1InitialBoard[row][col]) {
+                case 'Carrier':
+                  p1CarrierHp--;
+                  if (p1CarrierHp === 0) p1SunkShips.push('Carrier');
+                  break;
+                case 'Battleship':
+                  p1BattleshipHp--;
+                  if (p1BattleshipHp === 0) p1SunkShips.push('Battleship');
+                  break;
+                case 'Cruiser':
+                  p1CruiserHp--;
+                  if (p1CruiserHp === 0) p1SunkShips.push('Cruiser');
+                  break;
+                case 'Submarine':
+                  p1SubmarineHp--;
+                  if (p1SubmarineHp === 0) p1SunkShips.push('Submarine');
+                  break;
+                case 'Destroyer':
+                  p1DestroyerHp--;
+                  if (p1DestroyerHp === 0) p1SunkShips.push('Destroyer');
+                  break;
+                default:
+                  break;
+              }
+              expect(game.state.p1SunkenShips).toEqual(p1SunkShips);
+            }
+          }
+        }
+
+        it('should throw a BOARD_POSITION_NOT_EMPTY_MESSAGE error', () => {
+          game.applyMove({
+            playerID: player1.id,
+            gameID: game.id,
+            move: {
+              posX: 1,
+              posY: 2,
+            },
+          });
+          game.applyMove({
+            playerID: player2.id,
+            gameID: game.id,
+            move: {
+              posX: 3,
+              posY: 4,
+            },
+          });
+          expect(() =>
+            game.applyMove({
+              playerID: player1.id,
+              gameID: game.id,
+              move: {
+                posX: 1,
+                posY: 2,
+              },
+            }),
+          ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
         });
       });
     });
