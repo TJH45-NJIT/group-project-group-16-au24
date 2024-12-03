@@ -1215,18 +1215,6 @@ describe('[T1] BattleShipGame', () => {
         let player1: Player;
         let player2: Player;
         const p1Board: BattleShipBoardPiece[][] = generateSetupBoard(
-          16,
-          true,
-          22,
-          false,
-          43,
-          false,
-          65,
-          true,
-          57,
-          false,
-        );
-        const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
           52,
           false,
           23,
@@ -1237,6 +1225,18 @@ describe('[T1] BattleShipGame', () => {
           true,
           69,
           true,
+        );
+        const p2Board: BattleShipBoardPiece[][] = generateSetupBoard(
+          16,
+          true,
+          22,
+          false,
+          43,
+          false,
+          65,
+          true,
+          57,
+          false,
         );
         let p1SunkShips: BattleShipBoardPiece[];
         let p1CarrierHp: number;
@@ -1361,34 +1361,111 @@ describe('[T1] BattleShipGame', () => {
             }
           }
         }
-
-        it('should throw a BOARD_POSITION_NOT_EMPTY_MESSAGE error', () => {
-          game.applyMove({
-            playerID: player1.id,
-            gameID: game.id,
-            move: {
-              posX: 1,
-              posY: 2,
-            },
+        it('should add Miss value to the p2MarkerBoard', () => {
+          makeAttackandCheckResult(0, 2, 'p1', 'M');
+        });
+        it('should add Miss value to the p1MarkerBoard', () => {
+          makeAttackandCheckResult(0, 2, 'p1', 'M');
+          makeAttackandCheckResult(1, 0, 'p2', 'M');
+        });
+        it('should add Hit value to the p2MarkerBoard', () => {
+          makeAttackandCheckResult(2, 2, 'p1', 'H');
+        });
+        it('should add Hit value to the p1MarkerBoard', () => {
+          makeAttackandCheckResult(0, 2, 'p1', 'M');
+          makeAttackandCheckResult(1, 1, 'p2', 'H');
+        });
+        it('should switch turnPlayer properly', () => {
+          expect(game.state.turnPlayer).toEqual(player1.id);
+          makeAttackandCheckResult(0, 2, 'p1', 'M');
+          expect(game.state.turnPlayer).toEqual(player2.id);
+          makeAttackandCheckResult(1, 1, 'p2', 'H');
+          expect(game.state.turnPlayer).toEqual(player1.id);
+          makeAttackandCheckResult(2, 2, 'p1', 'H');
+          expect(game.state.turnPlayer).toEqual(player2.id);
+          makeAttackandCheckResult(1, 0, 'p2', 'M');
+          expect(game.state.turnPlayer).toEqual(player1.id);
+        });
+        describe('when player 1 sinks all of player 2s ships', () => {
+          it('should set player 1 to the winner and set status to OVER', () => {
+            makeAttackandCheckResult(2, 2, 'p1', 'H'); // Battleship Hit
+            makeAttackandCheckResult(0, 0, 'p2', 'M');
+            makeAttackandCheckResult(2, 3, 'p1', 'H'); // Battleship Hit
+            makeAttackandCheckResult(1, 0, 'p2', 'M');
+            makeAttackandCheckResult(2, 4, 'p1', 'H'); // Battleship Hit
+            makeAttackandCheckResult(2, 0, 'p2', 'M');
+            makeAttackandCheckResult(2, 5, 'p1', 'H'); // Battleship Sunk
+            makeAttackandCheckResult(3, 0, 'p2', 'M');
+            makeAttackandCheckResult(1, 6, 'p1', 'H'); // Carrier Hit
+            makeAttackandCheckResult(4, 0, 'p2', 'M');
+            makeAttackandCheckResult(2, 6, 'p1', 'H'); // Carrier Hit
+            makeAttackandCheckResult(5, 0, 'p2', 'M');
+            makeAttackandCheckResult(3, 6, 'p1', 'H'); // Carrier Hit
+            makeAttackandCheckResult(6, 0, 'p2', 'M');
+            makeAttackandCheckResult(4, 6, 'p1', 'H'); // Carrier Hit
+            makeAttackandCheckResult(7, 0, 'p2', 'M');
+            makeAttackandCheckResult(5, 6, 'p1', 'H'); // Carrier Sunk
+            makeAttackandCheckResult(8, 0, 'p2', 'M');
+            makeAttackandCheckResult(4, 3, 'p1', 'H'); // Cruiser Hit
+            makeAttackandCheckResult(9, 0, 'p2', 'M');
+            makeAttackandCheckResult(4, 4, 'p1', 'H'); // Cruiser Hit
+            makeAttackandCheckResult(2, 3, 'p2', 'H');
+            makeAttackandCheckResult(4, 5, 'p1', 'H'); // Cruiser Sunk
+            makeAttackandCheckResult(2, 4, 'p2', 'H');
+            makeAttackandCheckResult(6, 5, 'p1', 'H'); // Submarine Hit
+            makeAttackandCheckResult(2, 6, 'p2', 'H');
+            makeAttackandCheckResult(7, 5, 'p1', 'H'); // Submarine Hit
+            makeAttackandCheckResult(9, 1, 'p2', 'M');
+            makeAttackandCheckResult(8, 5, 'p1', 'H'); // Submarine Sunk
+            makeAttackandCheckResult(0, 2, 'p2', 'M');
+            makeAttackandCheckResult(5, 7, 'p1', 'H'); // Destroyer Hit
+            makeAttackandCheckResult(2, 5, 'p2', 'H');
+            makeAttackandCheckResult(5, 8, 'p1', 'H'); // Destroyer Sunk
+            expect(game.state.winner).toEqual(player1.id);
+            expect(game.state.internalState).toEqual('GAME_END');
+            expect(game.state.status).toEqual('OVER');
           });
-          game.applyMove({
-            playerID: player2.id,
-            gameID: game.id,
-            move: {
-              posX: 3,
-              posY: 4,
-            },
+        });
+        describe('when player 2 sinks all of player 1s ships', () => {
+          it('should set player 2 to the winner and set status to OVER', () => {
+            makeAttackandCheckResult(2, 2, 'p1', 'H');
+            makeAttackandCheckResult(2, 3, 'p2', 'H'); // Battleship Hit
+            makeAttackandCheckResult(2, 3, 'p1', 'H');
+            makeAttackandCheckResult(2, 4, 'p2', 'H'); // Battleship Hit
+            makeAttackandCheckResult(2, 4, 'p1', 'H');
+            makeAttackandCheckResult(2, 5, 'p2', 'H'); // Battleship Hit
+            makeAttackandCheckResult(2, 5, 'p1', 'H');
+            makeAttackandCheckResult(2, 6, 'p2', 'H'); // Battleship Sunk
+            makeAttackandCheckResult(6, 5, 'p1', 'H');
+            makeAttackandCheckResult(5, 2, 'p2', 'H'); // Carrier Hit
+            makeAttackandCheckResult(6, 6, 'p1', 'M');
+            makeAttackandCheckResult(5, 3, 'p2', 'H'); // Carrier Hit
+            makeAttackandCheckResult(7, 5, 'p1', 'H');
+            makeAttackandCheckResult(5, 4, 'p2', 'H'); // Carrier Hit
+            makeAttackandCheckResult(5, 5, 'p1', 'M');
+            makeAttackandCheckResult(5, 5, 'p2', 'H'); // Carrier Hit
+            makeAttackandCheckResult(8, 5, 'p1', 'H');
+            makeAttackandCheckResult(5, 6, 'p2', 'H'); // Carrier Sunk
+            makeAttackandCheckResult(5, 7, 'p1', 'H');
+            makeAttackandCheckResult(1, 1, 'p2', 'H'); // Cruiser Hit
+            makeAttackandCheckResult(4, 4, 'p1', 'H');
+            makeAttackandCheckResult(2, 1, 'p2', 'H'); // Cruiser Hit
+            makeAttackandCheckResult(4, 3, 'p1', 'H');
+            makeAttackandCheckResult(3, 1, 'p2', 'H'); // Cruiser Sunk
+            makeAttackandCheckResult(4, 2, 'p1', 'M');
+            makeAttackandCheckResult(6, 1, 'p2', 'H'); // Submarine Hit
+            makeAttackandCheckResult(5, 8, 'p1', 'H');
+            makeAttackandCheckResult(7, 1, 'p2', 'H'); // Submarine Hit
+            makeAttackandCheckResult(9, 1, 'p1', 'M');
+            makeAttackandCheckResult(8, 1, 'p2', 'H'); // Submarine Sunk
+            makeAttackandCheckResult(9, 9, 'p1', 'M');
+            makeAttackandCheckResult(6, 9, 'p2', 'H'); // Destroyer Hit
+            makeAttackandCheckResult(0, 9, 'p1', 'M');
+            makeAttackandCheckResult(7, 9, 'p2', 'H'); // Destroyer Sunk
+            expect(game.state.winner).toEqual(player2.id);
+            expect(game.state.internalState).toEqual('GAME_END');
+            expect(game.state.status).toEqual('OVER');
           });
-          expect(() =>
-            game.applyMove({
-              playerID: player1.id,
-              gameID: game.id,
-              move: {
-                posX: 1,
-                posY: 2,
-              },
-            }),
-          ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
         });
       });
     });
