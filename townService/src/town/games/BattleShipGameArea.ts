@@ -5,7 +5,9 @@ import {
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  BattleShipGameState,
   BattleShipMove,
+  GameInstance,
   GameMoveCommand,
   InteractableCommand,
   InteractableCommandReturnType,
@@ -13,6 +15,7 @@ import {
   JoinSpectatorCommand,
   LeaveGameCommand,
   LeaveSpectatorCommand,
+  NewGameCommand,
 } from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
 import GameArea from './GameArea';
@@ -22,6 +25,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   playersInGame: Player[] = [];
 
   observersInGame: Player[] = [];
+
+  gameHistory: BattleShipGame[] = [];
 
   // eslint-disable-next-line class-methods-use-this
   protected getType(): InteractableType {
@@ -118,6 +123,54 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   }
 
   /**
+   * Deals with NewGameCommands commands
+   * Helper Method handle command
+   * @param command The sent command
+   */
+  public handleNewGameCommand<CommandType extends InteractableCommand>(
+    command: NewGameCommand,
+  ): InteractableCommandReturnType<CommandType> {
+    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.prevgameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game?.state.status === 'OVER') {
+      this.gameHistory.push(this._game);
+      this._game = undefined;
+      this._emitAreaChanged();
+    }
+    return undefined as InteractableCommandReturnType<CommandType>;
+  }
+
+  /**
+   * Deals with NewGameCommands commands
+   * Helper Method handle command
+   * @param command The sent command
+   * scores: { [p1]: this.gameHistory[i].state.p2SunkenShips.length }, -- this might cuase errors later
+   */
+  public handleGetHistoryCommand<
+    CommandType extends InteractableCommand,
+  >(): InteractableCommandReturnType<CommandType> {
+    const gameHistoryInstanceList: GameInstance<BattleShipGameState>[] = [];
+    for (let i = 0; i < this.gameHistory.length; i++) {
+      const { p1 } = this.gameHistory[i].state;
+      const { p2 } = this.gameHistory[i].state;
+      if (p1 && p2)
+        gameHistoryInstanceList.push({
+          state: this.gameHistory[i].state,
+          id: this.gameHistory[i].id,
+          players: [p1, p2],
+          result: {
+            gameID: this.gameHistory[i].id,
+            scores: {
+              [p1]: this.gameHistory[i].state.p2SunkenShips.length,
+              [p2]: this.gameHistory[i].state.p1SunkenShips.length,
+            },
+          },
+        });
+    }
+    return { gameHistory: gameHistoryInstanceList } as InteractableCommandReturnType<CommandType>;
+  }
+
+  /**
    * Handle all commands sent to the game, diverting them to other backend functions as necessary. Errors
    * should be propagated to the frontend when they occur as UI messages explaining the error.
    * @param command The sent command
@@ -132,6 +185,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (command.type === 'GameMove') return this.handleGameMoveCommand(command, player);
     if (command.type === 'JoinSpectator') return this.handleSpectatorJoinCommand(command, player);
     if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command, player);
+    if (command.type === 'NewGame') return this.handleNewGameCommand(command);
+    if (command.type === 'GetHistory') return this.handleGetHistoryCommand();
     throw new Error(INVALID_COMMAND_MESSAGE);
   }
 }

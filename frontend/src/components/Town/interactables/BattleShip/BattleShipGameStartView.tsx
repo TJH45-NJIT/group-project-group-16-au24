@@ -1,4 +1,4 @@
-import { Button, Center, StackDivider, Text } from '@chakra-ui/react';
+import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
 import React, { useCallback, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
@@ -27,6 +27,8 @@ export function BattleShipGameStartView({
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const toast = useToast();
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
   const [initialBoard] = useState<BattleShipBoardPiece[][]>([
@@ -64,38 +66,52 @@ export function BattleShipGameStartView({
     return townController.ourPlayer.id === gameModel.state.p1;
   }, [gameModel.state.p1, townController.ourPlayer.id]);
 
+  async function onSubmitButtonClick() {
+    await gameAreaController.makeSetupMove(initialBoard);
+  }
+
   return (
-    <Center>
+    <StackDivider>
       {isPlayer() ? (
         <StackDivider>
-          <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
-            initialBoard={initialBoard}
-            displayInitialBoard={true}
-            markerBoard={[]}></BattleShipBoard>
-          <Text>
-            <br />
-            Click and drag your ships to where you want them to be placed.
-            <br />
-            When you are ready to start the game, click the button below.
-            <br />
-          </Text>
-          <Button>Submit</Button>
-          <Text>
-            {isP1()
-              ? gameModel.state.p2InitialBoard.length === 0
+          <Center>
+            <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
+              initialBoard={initialBoard}
+              displayInitialBoard={true}
+              markerBoard={[]}></BattleShipBoard>
+          </Center>
+          <Center>
+            <Text>
+              <br />
+              Click and drag your ships to where you want them to be placed.
+              <br />
+              When you are ready to start the game, click the button below.
+              <br />
+            </Text>
+          </Center>
+          <Center>
+            <Button onClick={onSubmitButtonClick}>Submit</Button>
+          </Center>
+          <Center>
+            <Text>
+              {isP1()
+                ? gameModel.state.p2InitialBoard.length === 0
+                  ? OPPONENT_NOT_READY_TEXT
+                  : OPPONENT_READY_TEXT
+                : gameModel.state.p1InitialBoard.length === 0
                 ? OPPONENT_NOT_READY_TEXT
-                : OPPONENT_READY_TEXT
-              : gameModel.state.p1InitialBoard.length === 0
-              ? OPPONENT_NOT_READY_TEXT
-              : OPPONENT_READY_TEXT}
-          </Text>
+                : OPPONENT_READY_TEXT}
+            </Text>
+          </Center>
         </StackDivider>
       ) : (
-        <Text>
-          The players are currently placing their ships. You will be able to watch the game when
-          they finish setting up!
-        </Text>
+        <Center>
+          <Text>
+            The players are currently placing their ships. You will be able to watch the game when
+            they finish setting up!
+          </Text>
+        </Center>
       )}
-    </Center>
+    </StackDivider>
   );
 }

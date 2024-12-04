@@ -1,4 +1,4 @@
-import { Button, Center, Text } from '@chakra-ui/react';
+import { Button, Center, Text, useToast } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
@@ -22,6 +22,7 @@ export function BattleShipGameMainView({
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const townController = useTownController();
+  const toast = useToast();
 
   // By storing the usernames, we can still show the boards with the correct
   // usernames if the game ends due to someone leaving.
@@ -55,6 +56,25 @@ export function BattleShipGameMainView({
     );
   }, [gameAreaController.players, gameModel.state.p1, gameModel.state.p2]);
 
+  async function onBoardCellClick(x: number, y: number) {
+    try {
+      await gameAreaController.makeAttackMove(x, y);
+    } catch (anyException) {
+      if (anyException instanceof Error) {
+        const error: Error = anyException;
+        toast({
+          description: error.message,
+          status: 'error',
+        });
+      } else {
+        toast({
+          description: 'An unexpected error occurred.',
+          status: 'error',
+        });
+      }
+    }
+  }
+
   return (
     <div>
       <BattleShipBoardsView
@@ -76,10 +96,10 @@ export function BattleShipGameMainView({
         }
         leftShipsRemaining={
           isP1()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
+            ? 5 - gameModel.state.p1SunkenShips.length
             : isP2()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
-            : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
+            ? 5 - gameModel.state.p2SunkenShips.length
+            : 5 - gameModel.state.p1SunkenShips.length
         }
         rightPlayerName={
           isPlayer()
@@ -104,29 +124,31 @@ export function BattleShipGameMainView({
         }
         rightShipsRemaining={
           isP1()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
+            ? 5 - gameModel.state.p2SunkenShips.length
             : isP2()
-            ? 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p1SunkenShips.length */
-            : 0 /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: 5 - gameModel.state.p2SunkenShips.length */
-        }></BattleShipBoardsView>
+            ? 5 - gameModel.state.p1SunkenShips.length
+            : 5 - gameModel.state.p2SunkenShips.length
+        }
+        rightBoardClickCallback={onBoardCellClick}></BattleShipBoardsView>
       <br />
       <Center>
         <Text>
-          {isPlayer()
-            ? '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */ ===
-              townController.ourPlayer.id
-              ? 'It&apos;s your turn. Click one of the squares on the right to attack that spot!'
-              : 'It&apos;s not your turn right now.'
+          {gameModel.state.internalState === 'GAME_END'
+            ? `The winner is ${gameAreaController.players.find(
+                value => value.id === gameModel.state.winner,
+              )}`
+            : isPlayer()
+            ? gameModel.state.turnPlayer === townController.ourPlayer.id
+              ? "It's your turn. Click one of the squares on the right to attack that spot!"
+              : "It's not your turn right now."
             : `It is currently ${
-                gameAreaController.players.find(
-                  value =>
-                    value.id ===
-                    '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer */,
-                )?.userName ??
-                '' /* REPLACE (WHEN ACCESSIBLE VIA MERGE) WITH: gameModel.state.turnPlayer === gameModel.state.p1 ? 'Player 1' : 'Player 2' */
-              }&apos;s turn.`}
+                gameAreaController.players.find(value => value.id === gameModel.state.turnPlayer)
+                  ?.userName ?? gameModel.state.turnPlayer === gameModel.state.p1
+                  ? 'Player 1'
+                  : 'Player 2'
+              }'s turn.`}
         </Text>
-        <Button>Return</Button>
+        <Button hidden={true}>Return</Button>
       </Center>
     </div>
   );
