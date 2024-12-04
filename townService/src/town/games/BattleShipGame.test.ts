@@ -296,7 +296,6 @@ describe('[T1] BattleShipGame', () => {
         });
       });
     });
-    // TODO Create _leave tests for after the setup phase is finished, requires complete applyMove
   });
 
   describe('[T1.3] _applyMove', () => {
