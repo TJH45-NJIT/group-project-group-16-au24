@@ -4,7 +4,6 @@ import InvalidParametersError, {
   BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
   BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
   BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
-  BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
   BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
@@ -165,7 +164,7 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     else checkedSpots[x][y + 1] = true;
     const finalSpot = (isXAxis ? x : y) + (shipSizes.get(piece) ?? 0) - 1;
     if (finalSpot >= 10)
-      throw new Error(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, piece));
+      throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
     if (isXAxis)
       for (let nextSpot = x + 2; nextSpot <= finalSpot; nextSpot++)
         if (board[nextSpot][y] === piece) checkedSpots[nextSpot][y] = true;
