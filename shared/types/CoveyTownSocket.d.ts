@@ -112,6 +112,8 @@ export type BattleShipMove = BattleShipSetupMove | BattleShipAttackMove;
 export interface BattleShipGameState extends WinnableGameState {
   p1?: PlayerID;
   p2?: PlayerID;
+  p1Username: string;
+  p2Username: string;
   p1InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
   p2InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
   p1Board: BattleShipBoardPiece[][];

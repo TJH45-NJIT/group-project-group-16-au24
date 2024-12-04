@@ -1,9 +1,9 @@
 import util from 'node:util';
 import InvalidParametersError, {
-  // BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
   BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
-  // BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
-  // BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
+  BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+  BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR,
   BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
   BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
@@ -29,6 +29,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     super({
       p1: undefined,
       p2: undefined,
+      p1Username: 'Player 1',
+      p2Username: 'Player 2',
       p1InitialBoard: [],
       p2InitialBoard: [],
       p1Board: [[], [], [], [], [], [], [], [], [], []],
@@ -183,17 +185,54 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   protected _applySetupMove(playerID: PlayerID, board: BattleShipBoardPiece[][]): void {
     if (playerID !== this.state.p1 && playerID !== this.state.p2)
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
-    if (board.length !== 10) throw new Error('Invalid board');
+    const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
+    const missingShips: BattleShipBoardPiece[] = [
+      'Destroyer',
+      'Submarine',
+      'Cruiser',
+      'Battleship',
+      'Carrier',
+    ];
+    // Scanning each spot to find the top-left corner of all placed ships
+    for (let x = 0; x < 10; x++)
+      for (let y = 0; y < 10; y++) {
+        const piece = board[x][y];
+        if (checkedSpots[x][y] !== true && piece !== undefined && piece !== null) {
+          if (!missingShips.includes(piece))
+            throw new Error(util.format(BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE, piece));
+          // Verifying ship correctness upon finding a new ship
+          if (x + 1 < 10 && board[x + 1][y] === piece)
+            BattleShipGame._verifyShipValidity(board, checkedSpots, piece, x, y, true);
+          else if (y + 1 < 10 && board[x][y + 1] === piece)
+            BattleShipGame._verifyShipValidity(board, checkedSpots, piece, x, y, false);
+          else throw new Error(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, piece));
+          missingShips.splice(
+            missingShips.findIndex(value => value === piece),
+            1,
+          );
+        }
+      }
+    if (missingShips.length !== 0)
+      throw new Error(
+        util.format(
+          BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
+          missingShips.join(BATTLESHIP_SETUP_SHIP_MISSING_SEPARATOR),
+        ),
+      );
     if (playerID === this.state.p1) this.state.p1InitialBoard = board;
     else this.state.p2InitialBoard = board;
     if (this.state.p1InitialBoard.length === 10 && this.state.p2InitialBoard.length === 10) {
-      this.state.internalState = 'GAME_MAIN';
       for (let x = 0; x < 10; x++)
         for (let y = 0; y < 10; y++) {
           this.state.p1Board[x][y] = this.state.p1InitialBoard[x][y];
           this.state.p2Board[x][y] = this.state.p2InitialBoard[x][y];
         }
+      this.state.p1Username =
+        this._players.find(value => value.id === this.state.p1)?.userName ?? 'Player 1';
+      this.state.p2Username =
+        this._players.find(value => value.id === this.state.p2)?.userName ?? 'Player 2';
       this.state.turnPlayer = this.state.p1;
+      this.state.internalState = 'GAME_MAIN';
       this._updateExternalState();
     }
   }
