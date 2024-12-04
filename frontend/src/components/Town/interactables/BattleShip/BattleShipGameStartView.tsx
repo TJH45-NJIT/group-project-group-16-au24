@@ -1,5 +1,5 @@
 import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import {
@@ -8,7 +8,7 @@ import {
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
-import { BattleShipBoard } from './BattleShipBoard';
+import { BattleShipSetupBoard } from './BattleShipSetupBoard';
 
 const OPPONENT_READY_TEXT = 'Opponent is ready.';
 const OPPONENT_NOT_READY_TEXT = 'Opponent is not ready yet.';
@@ -29,28 +29,12 @@ export function BattleShipGameStartView({
   const [changesSubmitted, setChangesSubmitted] = useState<boolean>(false);
 
   // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
-  const [initialBoard] = useState<BattleShipBoardPiece[][]>([
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,  'Submarine',  'Submarine',  'Submarine',    undefined,  'Destroyer' ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [ 'Battleship', 'Battleship', 'Battleship', 'Battleship',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-  ]);
+  const [initialBoard, setInitialBoard] = useState<BattleShipBoardPiece[][]>([]);
+
+  const updateInitialBoard = useCallback((newBoard: BattleShipBoardPiece[][]) => {
+    setInitialBoard(newBoard);
+    setChangesSubmitted(false);
+  }, []);
 
   async function onSubmitButtonClick() {
     if (mounted) {
@@ -86,11 +70,7 @@ export function BattleShipGameStartView({
       {gameAreaController.isPlayer ? (
         <StackDivider>
           <Center>
-            <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
-              initialBoard={initialBoard}
-              displayInitialBoard={true}
-              markerBoard={[]}
-            />
+            <BattleShipSetupBoard deliverModifiedBoard={updateInitialBoard} />
           </Center>
           <Center>
             <Text>
