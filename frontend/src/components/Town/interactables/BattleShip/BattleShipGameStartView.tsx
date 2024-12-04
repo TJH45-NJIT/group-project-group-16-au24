@@ -92,7 +92,15 @@ export function BattleShipGameStartView({
             </Text>
           </Center>
           <Center>
-            <Text>When you are ready to start the game, click the button below.</Text>
+            <Text>
+              All ships must be completely enclosed within the middle 10×10 squares for the board to
+              be considered valid.
+            </Text>
+          </Center>
+          <Center>
+            <Text>
+              When you are ready to submit your board and start the game, click the button below.
+            </Text>
           </Center>
           <br />
           <Center>
