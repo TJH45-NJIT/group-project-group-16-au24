@@ -72,20 +72,25 @@ export function BattleShipGameStartView({
           <Center>
             <BattleShipSetupBoard deliverModifiedBoard={updateInitialBoard} />
           </Center>
+          <br />
+          <Center>
+            <Text>Left click and drag your ships to where you want them to be placed.</Text>
+          </Center>
           <Center>
             <Text>
-              <br />
-              Click and drag your ships to where you want them to be placed.
-              <br />
-              When you are ready to start the game, click the button below.
-              <br />
+              Right click on a ship to rotate it, which will only work if there is enough space.
             </Text>
           </Center>
+          <Center>
+            <Text>When you are ready to start the game, click the button below.</Text>
+          </Center>
+          <br />
           <Center>
             <Button onClick={onSubmitButtonClick} disabled={changesSubmitted}>
               Submit
             </Button>
           </Center>
+          <br />
           <Center>
             <Text>
               {gameAreaController.isP1
