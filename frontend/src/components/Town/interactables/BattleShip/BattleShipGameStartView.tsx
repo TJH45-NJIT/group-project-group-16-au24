@@ -28,8 +28,18 @@ export function BattleShipGameStartView({
   const [mounted, setMounted] = useState<boolean>(false); // Prevents a memory leak warning
   const [changesSubmitted, setChangesSubmitted] = useState<boolean>(false);
 
-  // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
-  const [initialBoard, setInitialBoard] = useState<BattleShipBoardPiece[][]>([]);
+  const [initialBoard, setInitialBoard] = useState<BattleShipBoardPiece[][]>([
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ]);
 
   const updateInitialBoard = useCallback((newBoard: BattleShipBoardPiece[][]) => {
     setInitialBoard(newBoard);
