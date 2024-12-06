@@ -182,17 +182,13 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand | JoinSpectatorCommand | LeaveSpectatorCommand | NewGameCommand | GetHistoryCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand | NewGameCommand | GetHistoryCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
 }
 export interface JoinGameCommand {
   type: 'JoinGame';
-}
-export interface LeaveSpectatorCommand {
-  type: 'LeaveSpectator';
-  gameID: GameInstanceID;
 }
 export interface LeaveGameCommand {
   type: 'LeaveGame';
@@ -202,10 +198,6 @@ export interface GameMoveCommand<MoveType> {
   type: 'GameMove';
   gameID: GameInstanceID;
   move: MoveType;
-}
-export interface JoinSpectatorCommand{
-  type: 'JoinSpectator';
-  gameID: GameInstanceID;
 }
 export interface NewGameCommand{
   type: 'NewGame';

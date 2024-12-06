@@ -12,9 +12,7 @@ import {
   InteractableCommand,
   InteractableCommandReturnType,
   InteractableType,
-  JoinSpectatorCommand,
   LeaveGameCommand,
-  LeaveSpectatorCommand,
   NewGameCommand,
 } from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
@@ -89,44 +87,6 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   }
 
   /**
-   * Deals with Join Spectator commands
-   * Helper Method handle command
-   * @param command The sent command
-   * @param player The player who sent the command
-   */
-  handleSpectatorJoinCommand<CommandType extends InteractableCommand>(
-    command: JoinSpectatorCommand,
-    player: Player,
-  ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID)
-      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
-    this.observersInGame.push(player);
-    this._occupants.push(player);
-    this._emitAreaChanged();
-    return { gameID: this._game.id } as InteractableCommandReturnType<CommandType>;
-  }
-
-  /**
-   * Deals with Leave Spectator commands
-   * Helper Method handle command
-   * @param command The sent command
-   * @param player The player who sent the command
-   */
-  public handleSpectatorLeaveCommand<CommandType extends InteractableCommand>(
-    command: LeaveSpectatorCommand,
-    player: Player,
-  ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID)
-      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
-    this.observersInGame = this.observersInGame.filter(p => p.id !== player.id);
-    this._occupants = this.occupants.filter(p => p.id !== player.id);
-    this._emitAreaChanged();
-    return undefined as InteractableCommandReturnType<CommandType>;
-  }
-
-  /**
    * Deals with NewGameCommands commands
    * Helper Method handle command
    * @param command The sent command
@@ -188,8 +148,6 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (command.type === 'JoinGame') return this.handleJoinCommand(player);
     if (command.type === 'LeaveGame') return this.handleLeaveCommand(command, player);
     if (command.type === 'GameMove') return this.handleGameMoveCommand(command, player);
-    if (command.type === 'JoinSpectator') return this.handleSpectatorJoinCommand(command, player);
-    if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command, player);
     if (command.type === 'NewGame') return this.handleNewGameCommand(command);
     if (command.type === 'GetHistory') return this.handleGetHistoryCommand();
     throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);

@@ -356,18 +356,4 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
       `${this.id} ${winner.id} ${loser.id} ${remainingShips} Method not implemented.`,
     );
   }
-
-  /**
-   * Retrieves the most recent game entries in the GameHistory database for display.
-   */
-  public retrieveGameHistory(): string {
-    throw new Error(`${this.id} Method not implemented.`);
-  }
-
-  /**
-   * Retrieves the best performed game entries in the GameHistory database for display.
-   */
-  public retrieveLeaderboard(): string {
-    throw new Error(`${this.id} Method not implemented.`);
-  }
 }
