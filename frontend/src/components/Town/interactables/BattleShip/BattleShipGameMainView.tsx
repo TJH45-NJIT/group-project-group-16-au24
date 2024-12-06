@@ -44,6 +44,25 @@ export function BattleShipGameMainView({
     }
   }
 
+  async function onNewGameButtonClick() {
+    try {
+      await gameAreaController.resetGame();
+    } catch (anyException) {
+      if (anyException instanceof Error) {
+        const error: Error = anyException;
+        toast({
+          description: error.message,
+          status: 'error',
+        });
+      } else {
+        toast({
+          description: 'An unexpected error occurred.',
+          status: 'error',
+        });
+      }
+    }
+  }
+
   useEffect(() => {
     if (gameModel.state.internalState === 'GAME_END') {
       setFooter(
@@ -119,7 +138,14 @@ export function BattleShipGameMainView({
       <br />
       <Center>
         <Text>{footer}</Text>
-        <Button hidden={true}>Return</Button>
+      </Center>
+      <br />
+      <Center>
+        <Button
+          hidden={gameModel.state.internalState !== 'GAME_END'}
+          onClick={onNewGameButtonClick}>
+          New Game
+        </Button>
       </Center>
     </StackDivider>
   );

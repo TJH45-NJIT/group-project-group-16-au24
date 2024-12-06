@@ -118,14 +118,13 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   public async resetGame() {
-    if (this._model.game === undefined || this._instanceID === undefined || !this.isActive())
+    if (this._model.game === undefined || this._instanceID === undefined)
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);
     if (this.internalState == 'GAME_END') {
       const newGameCommand: NewGameCommand = {
         type: 'NewGame',
         prevgameID: this._instanceID,
       };
-      this.getHistory();
       await this._townController.sendInteractableCommand(this.id, newGameCommand);
     }
   }

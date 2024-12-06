@@ -19,11 +19,6 @@ import BattleShipGame from './BattleShipGame';
 import GameArea from './GameArea';
 
 export default class BattleShipGameArea extends GameArea<BattleShipGame> {
-  // eslint-disable-next-line class-methods-use-this
-  playersInGame: Player[] = [];
-
-  observersInGame: Player[] = [];
-
   gameHistory: BattleShipGame[] = [];
 
   // eslint-disable-next-line class-methods-use-this
@@ -41,7 +36,6 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   ): InteractableCommandReturnType<CommandType> {
     if (this._game === undefined) this._game = new BattleShipGame();
     this._game.join(player);
-    this.playersInGame?.push(player);
     this._emitAreaChanged();
     return { gameID: this._game.id } as InteractableCommandReturnType<CommandType>;
   }
