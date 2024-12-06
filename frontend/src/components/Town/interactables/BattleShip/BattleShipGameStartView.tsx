@@ -48,23 +48,12 @@ export function BattleShipGameStartView({
 
   async function onSubmitButtonClick() {
     if (mounted) {
-      try {
-        await gameAreaController.makeSetupMove(initialBoard);
+      if (
+        await gameAreaController.sendRequestSafely(async () => {
+          await gameAreaController.makeSetupMove(initialBoard);
+        }, toast)
+      )
         setChangesSubmitted(true);
-      } catch (anyException) {
-        if (anyException instanceof Error) {
-          const error: Error = anyException;
-          toast({
-            description: error.message,
-            status: 'error',
-          });
-        } else {
-          toast({
-            description: 'An unexpected error occurred.',
-            status: 'error',
-          });
-        }
-      }
     }
   }
 

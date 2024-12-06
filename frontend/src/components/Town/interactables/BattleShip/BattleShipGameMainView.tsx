@@ -26,41 +26,15 @@ export function BattleShipGameMainView({
   const [footer, setFooter] = useState<string>('');
 
   async function onBoardCellClick(x: number, y: number) {
-    try {
+    await gameAreaController.sendRequestSafely(async () => {
       await gameAreaController.makeAttackMove(x, y);
-    } catch (anyException) {
-      if (anyException instanceof Error) {
-        const error: Error = anyException;
-        toast({
-          description: error.message,
-          status: 'error',
-        });
-      } else {
-        toast({
-          description: 'An unexpected error occurred.',
-          status: 'error',
-        });
-      }
-    }
+    }, toast);
   }
 
   async function onNewGameButtonClick() {
-    try {
+    await gameAreaController.sendRequestSafely(async () => {
       await gameAreaController.resetGame();
-    } catch (anyException) {
-      if (anyException instanceof Error) {
-        const error: Error = anyException;
-        toast({
-          description: error.message,
-          status: 'error',
-        });
-      } else {
-        toast({
-          description: 'An unexpected error occurred.',
-          status: 'error',
-        });
-      }
-    }
+    }, toast);
   }
 
   useEffect(() => {

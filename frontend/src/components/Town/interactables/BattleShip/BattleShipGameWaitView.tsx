@@ -24,22 +24,9 @@ export function BattleShipGameWaitView({
   const toast = useToast();
 
   async function onJoinButtonClick() {
-    try {
+    await gameAreaController.sendRequestSafely(async () => {
       await gameAreaController.joinGame();
-    } catch (anyException) {
-      if (anyException instanceof Error) {
-        const error: Error = anyException;
-        toast({
-          description: error.message,
-          status: 'error',
-        });
-      } else {
-        toast({
-          description: 'An unexpected error occurred.',
-          status: 'error',
-        });
-      }
-    }
+    }, toast);
   }
 
   return (

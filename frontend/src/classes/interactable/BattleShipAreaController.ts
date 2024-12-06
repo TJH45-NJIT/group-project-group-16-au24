@@ -1,3 +1,4 @@
+import { ToastId, UseToastOptions } from '@chakra-ui/react';
 import {
   GameArea,
   GameStatus,
@@ -154,5 +155,21 @@ export default class BattleShipAreaController extends GameAreaController<
       },
     };
     await this._townController.sendInteractableCommand(this.id, attackCommand);
+  }
+
+  public async sendRequestSafely(
+    requestCallback: () => Promise<void>,
+    toast: { (options?: UseToastOptions | undefined): ToastId | undefined },
+  ): Promise<boolean> {
+    try {
+      await requestCallback();
+      return true;
+    } catch (error) {
+      toast({
+        description: (error as Error).toString(),
+        status: 'error',
+      });
+      return false;
+    }
   }
 }
