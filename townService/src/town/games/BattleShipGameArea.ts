@@ -1,4 +1,4 @@
-import {
+import InvalidParametersError, {
   GAME_ID_MISSMATCH_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
   INVALID_COMMAND_MESSAGE,
@@ -58,8 +58,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: LeaveGameCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this._game.leave(player);
     this._emitAreaChanged();
     return undefined as InteractableCommandReturnType<CommandType>;
@@ -75,8 +76,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: GameMoveCommand<BattleShipMove>,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this._game.applyMove({
       gameID: command.gameID,
       playerID: player.id,
@@ -96,8 +98,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: JoinSpectatorCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this.observersInGame.push(player);
     this._occupants.push(player);
     this._emitAreaChanged();
@@ -114,8 +117,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: LeaveSpectatorCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this.observersInGame = this.observersInGame.filter(p => p.id !== player.id);
     this._occupants = this.occupants.filter(p => p.id !== player.id);
     this._emitAreaChanged();
@@ -130,8 +134,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   public handleNewGameCommand<CommandType extends InteractableCommand>(
     command: NewGameCommand,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.prevgameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.prevgameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     if (this._game?.state.status === 'OVER') {
       this.gameHistory.push(this._game);
       this._game = undefined;
@@ -187,6 +192,6 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command, player);
     if (command.type === 'NewGame') return this.handleNewGameCommand(command);
     if (command.type === 'GetHistory') return this.handleGetHistoryCommand();
-    throw new Error(INVALID_COMMAND_MESSAGE);
+    throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
   }
 }
