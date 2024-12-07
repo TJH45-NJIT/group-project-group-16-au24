@@ -310,13 +310,13 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
     if (hitShip === undefined || hitShip === null) {
       // When the shot misses
       markerBoard[posX][posY] = 'M';
-      this.state.hitOrMiss = false; 
+      this.state.hitOrMiss = false;
       this.state.turnPlayer = opponentID;
     } else {
       // When the shot hits
       markerBoard[posX][posY] = 'H';
-      this.state.hitOrMiss = true; 
-      this.state.lastShipHit = hitShip; 
+      this.state.hitOrMiss = true;
+      this.state.lastShipHit = hitShip;
       shipBoard[posX][posY] = undefined;
       BattleShipGame._detectSunkenShip(shipBoard, hitShip, sunkenShips);
       if (sunkenShips.length === 5) {
