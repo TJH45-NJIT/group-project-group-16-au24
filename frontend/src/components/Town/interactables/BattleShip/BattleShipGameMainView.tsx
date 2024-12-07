@@ -38,6 +38,89 @@ export function BattleShipGameMainView({
   }
 
   useEffect(() => {
+    if (gameModel.state.hitOrMiss) {
+      if (gameAreaController.isPlayer) {
+        if (gameModel.state.p1 === townController.ourPlayer.id) {
+          if (gameModel.state.turnPlayer === townController.ourPlayer.id) {
+            if (gameModel.state.p1SunkenShips.includes(gameModel.state.lastShipHit)) {
+              toast({
+                description: `Your ${gameModel.state.lastShipHit} was sunk!!!`,
+                status: 'error',
+              });
+            } else {
+              toast({
+                description: `Your ${gameModel.state.lastShipHit} was hit!`,
+                status: 'error',
+              });
+            }
+          } else {
+            if (gameModel.state.p2SunkenShips.includes(gameModel.state.lastShipHit)) {
+              toast({
+                description: `You sank a ${gameModel.state.lastShipHit}!!!`,
+                status: 'success',
+              });
+            } else {
+              toast({
+                description: `You hit a ${gameModel.state.lastShipHit}!`,
+                status: 'success',
+              });
+            }
+          }
+        } else {
+          if (gameModel.state.turnPlayer === townController.ourPlayer.id) {
+            if (gameModel.state.p2SunkenShips.includes(gameModel.state.lastShipHit)) {
+              toast({
+                description: `Your ${gameModel.state.lastShipHit} was sunk!!!`,
+                status: 'error',
+              });
+            } else {
+              toast({
+                description: `Your ${gameModel.state.lastShipHit} was hit!`,
+                status: 'error',
+              });
+            }
+          } else {
+            if (gameModel.state.p1SunkenShips.includes(gameModel.state.lastShipHit)) {
+              toast({
+                description: `You sank a ${gameModel.state.lastShipHit}!!!`,
+                status: 'success',
+              });
+            } else {
+              toast({
+                description: `You hit a ${gameModel.state.lastShipHit}!`,
+                status: 'success',
+              });
+            }
+          }
+        }
+      } else {
+        if (gameModel.state.turnPlayer === gameModel.state.p1) {
+          if (gameModel.state.p1SunkenShips.includes(gameModel.state.lastShipHit)) {
+            toast({
+              description: `${gameModel.state.p2Username} sank a ${gameModel.state.lastShipHit}!!!`,
+              status: 'error',
+            });
+          } else {
+            toast({
+              description: `${gameModel.state.p2Username} hit a ${gameModel.state.lastShipHit}!`,
+              status: 'error',
+            });
+          }
+        } else {
+          if (gameModel.state.p2SunkenShips.includes(gameModel.state.lastShipHit)) {
+            toast({
+              description: `${gameModel.state.p1Username} sank a ${gameModel.state.lastShipHit}!!!`,
+              status: 'error',
+            });
+          } else {
+            toast({
+              description: `${gameModel.state.p1Username} hit a ${gameModel.state.lastShipHit}!`,
+              status: 'error',
+            });
+          }
+        }
+      }
+    }
     if (gameModel.state.internalState === 'GAME_END') {
       setFooter(
         `The winner is ${
@@ -67,6 +150,10 @@ export function BattleShipGameMainView({
     gameAreaController.isPlayer,
     gameModel.state.internalState,
     gameModel.state.p1,
+    gameModel.state.hitOrMiss,
+    gameModel.state.lastShipHit,
+    gameModel.state.p1SunkenShips,
+    gameModel.state.p2SunkenShips,
     gameModel.state.p1Username,
     gameModel.state.p2Username,
     gameModel.state.turnPlayer,

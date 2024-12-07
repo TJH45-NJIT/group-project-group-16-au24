@@ -53,7 +53,7 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   get isOurTurn(): boolean {
-    return this._townController.ourPlayer.id === this._model.game?.state.turnPlayer; //TODO Double check if working with backend turnPlayer properly
+    return this._townController.ourPlayer.id === this._model.game?.state.turnPlayer;
   }
 
   get hitOrMiss(): boolean {
