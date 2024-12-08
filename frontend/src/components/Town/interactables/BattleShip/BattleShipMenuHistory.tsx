@@ -1,9 +1,26 @@
 import { Button, Center, StackDivider, Table, Tbody, Td, Text, Thead, Tr } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
-import { InteractableID } from '../../../../types/CoveyTownSocket';
+import {
+  BattleShipGameState,
+  GameInstance,
+  InteractableID,
+} from '../../../../types/CoveyTownSocket';
 import { BattleShipMenuHistoryViewBoards } from './BattleShipMenuHistoryViewBoards';
+
+// The linter won't let me put this in all caps.
+const tableStyle = {
+  borderWidth: 3,
+  borderColor: 'black',
+};
+
+interface HistoryRow {
+  winner: string;
+  loser: string;
+  score: string;
+  gameModel: GameInstance<BattleShipGameState>;
+}
 
 interface BattleShipMenuHistoryProps {
   interactableID: InteractableID;
@@ -16,7 +33,8 @@ export function BattleShipMenuHistory({
 }: BattleShipMenuHistoryProps): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const tableBody = useRef<HTMLTableSectionElement>(null);
+  const [rows, setRows] = useState<HistoryRow[]>([]);
+  const [rowsUpdateFlag, setRowsUpdateFlag] = useState<boolean>(false);
 
   const [boards, setBoards] = useState<JSX.Element>();
   const exitSubmenuCallback = useCallback(() => {
@@ -24,53 +42,34 @@ export function BattleShipMenuHistory({
   }, []);
 
   useEffect(() => {
-    if (tableBody.current === null) {
-      exitMenuCallback();
-      return;
-    }
-    if (gameAreaController.gameHistory.length === 0)
-      tableBody.current.append('There are no entries to display at the moment.');
-    else
-      for (const entry of gameAreaController.gameHistory) {
-        const row = new HTMLTableRowElement();
-        const winnerCell = new HTMLTableCellElement();
-        const loserCell = new HTMLTableCellElement();
-        const scoreCell = new HTMLTableCellElement();
-        const boardCell = new HTMLTableCellElement();
-        let winnerScore = 0;
-        let loserScore = 0;
-        if (entry.state.winner === entry.state.p1) {
-          winnerCell.innerText = entry.state.p1Username;
-          winnerScore = entry.result?.scores[entry.state.p1Username] ?? 0;
-          loserCell.innerText = entry.state.p2Username;
-          loserScore = entry.result?.scores[entry.state.p2Username] ?? 0;
-        } else {
-          winnerCell.innerText = entry.state.p2Username;
-          winnerScore = entry.result?.scores[entry.state.p2Username] ?? 0;
-          loserCell.innerText = entry.state.p1Username;
-          loserScore = entry.result?.scores[entry.state.p1Username] ?? 0;
-        }
-        scoreCell.innerText = `${winnerScore} - ${loserScore}`;
-        const button = new HTMLButtonElement();
-        button.innerText = 'View';
-        button.onclick = () => {
-          setBoards(
-            <BattleShipMenuHistoryViewBoards
-              gameModel={entry}
-              exitSubmenuCallback={exitSubmenuCallback}
-            />,
-          );
-        };
-        boardCell.appendChild(button);
-        row.append(winnerCell, loserCell, scoreCell, boardCell);
-        tableBody.current.append(row);
+    if (rowsUpdateFlag) return;
+    setRowsUpdateFlag(true);
+    for (let i = 0; i < gameAreaController.gameHistory.length; i++) {
+      const entry = gameAreaController.gameHistory[i];
+      let winner: string;
+      let loser: string;
+      let winnerScore = 0;
+      let loserScore = 0;
+      if (entry.state.winner === entry.state.p1) {
+        winner = entry.state.p1Username;
+        winnerScore = entry.result?.scores[entry.state.p1Username] ?? 0;
+        loser = entry.state.p2Username;
+        loserScore = entry.result?.scores[entry.state.p2Username] ?? 0;
+      } else {
+        winner = entry.state.p2Username;
+        winnerScore = entry.result?.scores[entry.state.p2Username] ?? 0;
+        loser = entry.state.p1Username;
+        loserScore = entry.result?.scores[entry.state.p1Username] ?? 0;
       }
-  }, [
-    exitMenuCallback,
-    exitSubmenuCallback,
-    gameAreaController.gameHistory,
-    gameAreaController.leaderboard,
-  ]);
+      rows.push({
+        winner: winner,
+        loser: loser,
+        score: `${winnerScore} - ${loserScore}`,
+        gameModel: entry,
+      });
+    }
+    setRows(rows);
+  }, [gameAreaController.gameHistory, rows, rowsUpdateFlag]);
 
   return (
     <StackDivider>
@@ -79,35 +78,75 @@ export function BattleShipMenuHistory({
       ) : (
         <StackDivider>
           <Center>
-            <Text h={3}>Game History</Text>
+            <Text>
+              <b>Game History</b>
+            </Text>
           </Center>
           <Center>
-            <Table
-              marginLeft={'auto'}
-              marginRight={'auto'}
-              borderWidth={3}
-              borderColor={'black'}
-              textAlign={'center'}
-              margin={5}>
+            <Table marginLeft={'auto'} marginRight={'auto'} margin={5} {...tableStyle}>
               <Thead>
                 <Tr>
-                  <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                    <b>Winner</b>
+                  <Td {...tableStyle}>
+                    <Center>
+                      <b>Winner</b>
+                    </Center>
                   </Td>
-                  <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                    <b>Loser</b>
+                  <Td {...tableStyle}>
+                    <Center>
+                      <b>Loser</b>
+                    </Center>
                   </Td>
-                  <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                    <b>Score</b>
+                  <Td {...tableStyle}>
+                    <Center>
+                      <b>Score</b>
+                    </Center>
                   </Td>
-                  <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                    <b>Final Boards</b>
+                  <Td {...tableStyle}>
+                    <Center>
+                      <b>Final Boards</b>
+                    </Center>
                   </Td>
                 </Tr>
               </Thead>
-              <Tbody ref={tableBody} />
+              <Tbody>
+                {rows.map((row, index) => (
+                  <Tr key={index}>
+                    <Td {...tableStyle}>
+                      <Center>{row.winner}</Center>
+                    </Td>
+                    <Td {...tableStyle}>
+                      <Center>{row.loser}</Center>
+                    </Td>
+                    <Td {...tableStyle}>
+                      <Center>{row.score}</Center>
+                    </Td>
+                    <Td {...tableStyle}>
+                      <Center>
+                        <Button
+                          onClick={() => {
+                            setBoards(
+                              <BattleShipMenuHistoryViewBoards
+                                gameModel={row.gameModel}
+                                exitSubmenuCallback={exitSubmenuCallback}
+                              />,
+                            );
+                          }}>
+                          View
+                        </Button>
+                      </Center>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
             </Table>
           </Center>
+          {rows.length === 0 ? (
+            <Text>
+              <Center>There are no entries to display at the moment.</Center>
+            </Text>
+          ) : (
+            ''
+          )}
           <br />
           <Center>
             <Button onClick={exitMenuCallback}>Back</Button>

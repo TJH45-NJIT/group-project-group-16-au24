@@ -9,8 +9,11 @@ export function BattleShipMenuRules({ exitMenuCallback }: BattleShipMenuRulesPro
   return (
     <StackDivider>
       <Center>
-        <Text>Rules (to be added later)!</Text>
+        <Text>
+          <b>Rules</b>
+        </Text>
       </Center>
+      <Text>Rules (to be added later)!</Text>
       <br />
       <Center>
         <Button onClick={exitMenuCallback}>Back</Button>

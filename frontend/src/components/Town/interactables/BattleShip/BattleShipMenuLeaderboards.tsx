@@ -1,8 +1,19 @@
 import { Button, Center, StackDivider, Table, Tbody, Td, Text, Thead, Tr } from '@chakra-ui/react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import { InteractableID } from '../../../../types/CoveyTownSocket';
+
+// The linter won't let me put this in all caps.
+const tableStyle = {
+  borderWidth: 3,
+  borderColor: 'black',
+};
+
+interface LeaderboardRow {
+  username: string;
+  wins: number;
+}
 
 interface BattleShipMenuLeaderboardsProps {
   interactableID: InteractableID;
@@ -15,54 +26,65 @@ export function BattleShipMenuLeaderboards({
 }: BattleShipMenuLeaderboardsProps): JSX.Element {
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const tableBody = useRef<HTMLTableSectionElement>(null);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [rowsUpdateFlag, setRowsUpdateFlag] = useState<boolean>(false);
 
   useEffect(() => {
+    if (rowsUpdateFlag) return;
+    setRowsUpdateFlag(true);
     const leaderboard = gameAreaController.leaderboard;
-    if (tableBody.current === null) {
-      exitMenuCallback();
-      return;
-    }
-    if (leaderboard.size === 0)
-      tableBody.current.append('There are no entries to display at the moment.');
-    else
-      for (const entry of leaderboard) {
-        const row = new HTMLTableRowElement();
-        const nameCell = new HTMLTableCellElement();
-        const winsCell = new HTMLTableCellElement();
-        nameCell.innerText = entry[0];
-        winsCell.innerText = entry[1].toString();
-        row.append(nameCell, winsCell);
-        tableBody.current.append(row);
-      }
-  }, [exitMenuCallback, gameAreaController.leaderboard]);
+    for (const entry of leaderboard)
+      rows.push({
+        username: entry[0],
+        wins: entry[1],
+      });
+    setRows(rows);
+  }, [gameAreaController.leaderboard, rows, rowsUpdateFlag]);
 
   return (
     <StackDivider>
       <Center>
-        <Text h={3}>Leaderboards</Text>
+        <Text>
+          <b>Leaderboards</b>
+        </Text>
       </Center>
       <Center>
-        <Table
-          marginLeft={'auto'}
-          marginRight={'auto'}
-          borderWidth={3}
-          borderColor={'black'}
-          textAlign={'center'}
-          margin={5}>
+        <Table marginLeft={'auto'} marginRight={'auto'} margin={5} {...tableStyle}>
           <Thead>
             <Tr>
-              <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                <b>Player</b>
+              <Td {...tableStyle}>
+                <Center>
+                  <b>Player</b>
+                </Center>
               </Td>
-              <Td borderWidth={3} borderColor={'black'} textAlign={'center'}>
-                <b>Wins</b>
+              <Td {...tableStyle}>
+                <Center>
+                  <b>Wins</b>
+                </Center>
               </Td>
             </Tr>
           </Thead>
-          <Tbody ref={tableBody} />
+          <Tbody>
+            {rows.map((row, index) => (
+              <Tr key={index}>
+                <Td {...tableStyle}>
+                  <Center>{row.username}</Center>
+                </Td>
+                <Td {...tableStyle}>
+                  <Center>{row.wins}</Center>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
         </Table>
       </Center>
+      {rows.length === 0 ? (
+        <Text>
+          <Center>There are no entries to display at the moment.</Center>
+        </Text>
+      ) : (
+        ''
+      )}
       <br />
       <Center>
         <Button onClick={exitMenuCallback}>Back</Button>

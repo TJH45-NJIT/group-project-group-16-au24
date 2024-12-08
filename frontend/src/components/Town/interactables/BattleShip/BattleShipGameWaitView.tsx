@@ -68,6 +68,12 @@ export function BattleShipGameWaitView({
         <StackDivider>
           {/* Using separate Center components causes child components to be in separate rows. */}
           <Center>
+            <Text>
+              <b>New Game</b>
+            </Text>
+          </Center>
+          <br />
+          <Center>
             <Text>{gameModel?.players.length ?? 0}/2 Players</Text>
           </Center>
           <Center>
