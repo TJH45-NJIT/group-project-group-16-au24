@@ -114,10 +114,10 @@ export default class BattleShipAreaController extends GameAreaController<
   }
 
   public async getHistory() {
-    const { historyRecords } = await this._townController.sendInteractableCommand(this.id, {
+    const { gameHistory } = await this._townController.sendInteractableCommand(this.id, {
       type: 'GetHistory',
     });
-    this.gameHistory = historyRecords;
+    this.gameHistory = gameHistory;
   }
 
   public async resetGame() {
