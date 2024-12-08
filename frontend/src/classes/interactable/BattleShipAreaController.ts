@@ -9,7 +9,6 @@ import {
   BattleShipBoardPiece,
   NewGameCommand,
   GameInstance,
-  GameResult,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
@@ -90,11 +89,14 @@ export default class BattleShipAreaController extends GameAreaController<
     return this._model.game?.state.internalState ?? 'GAME_WAIT';
   }
 
-  get leaderboard(): GameResult[] {
-    const leaderboard: GameResult[] = [];
+  get leaderboard(): Map<string, number> {
+    const leaderboard = new Map<string, number>();
     for (let i = 0; i < this.gameHistory.length; i++) {
-      const result = this.gameHistory[i].result;
-      if (result) leaderboard.push(result);
+      const state = this.gameHistory[i].state;
+      const winnerUserName = state.winner === state.p1 ? state.p1Username : state.p2Username;
+      const wins = leaderboard.get(winnerUserName);
+      if (wins === undefined) leaderboard.set(winnerUserName, 1);
+      else leaderboard.set(winnerUserName, wins + 1);
     }
     return leaderboard;
   }
