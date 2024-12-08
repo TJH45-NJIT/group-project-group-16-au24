@@ -1,5 +1,5 @@
 import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import {
@@ -7,6 +7,7 @@ import {
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
+import { BattleShipMenuHistory } from './BattleShipMenuHistory';
 import { BattleShipMenuLeaderboards } from './BattleShipMenuLeaderboards';
 import { BattleShipMenuRules } from './BattleShipMenuRules';
 
@@ -38,8 +39,20 @@ export function BattleShipGameWaitView({
         exitMenuCallback={exitMenuCallback}
       />
     ),
-    HISTORY: undefined,
+    HISTORY: (
+      <BattleShipMenuHistory
+        key='HISTORY'
+        interactableID={interactableID}
+        exitMenuCallback={exitMenuCallback}
+      />
+    ),
   };
+
+  useEffect(() => {
+    gameAreaController.sendRequestSafely(async () => {
+      await gameAreaController.getHistory();
+    }, toast);
+  }, [gameAreaController, toast]);
 
   async function onJoinButtonClick() {
     await gameAreaController.sendRequestSafely(async () => {
@@ -49,7 +62,9 @@ export function BattleShipGameWaitView({
 
   return (
     <StackDivider>
-      {currentMenu === undefined ? (
+      {currentMenu ? (
+        currentMenu
+      ) : (
         <StackDivider>
           {/* Using separate Center components causes child components to be in separate rows. */}
           <Center>
@@ -78,11 +93,15 @@ export function BattleShipGameWaitView({
               }}>
               View Leaderboards
             </Button>
-            <Button margin={BUTTON_MARGIN}>View Game History</Button>
+            <Button
+              margin={BUTTON_MARGIN}
+              onClick={() => {
+                setCurrentMenu(menus.HISTORY);
+              }}>
+              View Game History
+            </Button>
           </Center>
         </StackDivider>
-      ) : (
-        currentMenu
       )}
     </StackDivider>
   );
