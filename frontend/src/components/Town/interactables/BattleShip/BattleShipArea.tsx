@@ -34,10 +34,9 @@ function BattleShipArea({ interactableID }: { interactableID: InteractableID }):
   useEffect(() => {
     const deliverUpdatedModel = () => {
       const gameModelRaw = gameAreaController.toInteractableAreaModel().game;
-      if (gameModelRaw !== undefined) {
-        setGameModel(gameModelRaw);
-        setInternalState(gameModelRaw.state.internalState);
-      }
+      if (gameModelRaw !== undefined) setInternalState(gameModelRaw.state.internalState);
+      else setInternalState('GAME_WAIT');
+      setGameModel(gameModelRaw);
     };
     gameAreaController.addListener('gameUpdated', deliverUpdatedModel);
     deliverUpdatedModel();

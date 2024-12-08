@@ -296,7 +296,7 @@ export function BattleShipSetupBoard({
       ref={canvasRef}
       width={width}
       height={(width * 5) / 8}
-      style={{ border: `${width / 80}px solid` }}
+      style={{ border: `${width / 80}px solid`, userSelect: 'none' }}
       onMouseDown={processCanvasMouseEvent}
       onMouseMove={processCanvasMouseEvent}
       onMouseUp={processCanvasMouseEvent}
