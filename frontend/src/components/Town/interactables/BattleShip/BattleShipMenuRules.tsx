@@ -78,7 +78,7 @@ export function BattleShipMenuRules({ exitMenuCallback }: BattleShipMenuRulesPro
         </li>
         <li>
           <Text>
-            If a ship occupies the attacked square, it’s a "hit" and a red X is displayed over the
+            If a ship occupies the attacked square, it’s a hit and a red X is displayed over the hit
             hit square.
           </Text>
         </li>
@@ -90,13 +90,13 @@ export function BattleShipMenuRules({ exitMenuCallback }: BattleShipMenuRulesPro
         </li>
         <li>
           <Text>
-            When all squares of a ship are hit, the ship is sunk. An announcment will be made, "You
-            sunk [ship name]"
+            When all squares of a ship are hit, the ship is sunk. An announcment will be made, You
+            sunk [ship name]
           </Text>
         </li>
         <li>
           <Text>
-            The game ends when all of one player's ships are sunk. The other player is declared the
+            The game ends when all of one players ships are sunk. The other player is declared the
             winner.
           </Text>
         </li>
