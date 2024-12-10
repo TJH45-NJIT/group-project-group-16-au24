@@ -1,13 +1,15 @@
-import { Button, Center, StackDivider, Text } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
-import useTownController from '../../../../hooks/useTownController';
 import {
   BattleShipGameState,
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
+import { BattleShipMenuHistory } from './BattleShipMenuHistory';
+import { BattleShipMenuLeaderboards } from './BattleShipMenuLeaderboards';
+import { BattleShipMenuRules } from './BattleShipMenuRules';
 
 const BUTTON_MARGIN = 5;
 
@@ -20,33 +22,93 @@ export function BattleShipGameWaitView({
   interactableID,
   gameModel,
 }: BattleShipGameWaitViewProps): JSX.Element {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
-  const isPlayer = useCallback((): boolean => {
-    return gameModel === undefined
-      ? false
-      : townController.ourPlayer.id === gameModel.state.p1 ||
-          townController.ourPlayer.id === gameModel.state.p2;
-  }, [gameModel, townController.ourPlayer.id]);
+  const toast = useToast();
+
+  const [currentMenu, setCurrentMenu] = useState<JSX.Element>();
+  const exitMenuCallback = useCallback(() => {
+    setCurrentMenu(undefined);
+  }, []);
+  const menus = {
+    RULES: <BattleShipMenuRules key='RULES' exitMenuCallback={exitMenuCallback} />,
+    LEADERBOARD: (
+      <BattleShipMenuLeaderboards
+        key='LEADERBOARD'
+        interactableID={interactableID}
+        exitMenuCallback={exitMenuCallback}
+      />
+    ),
+    HISTORY: (
+      <BattleShipMenuHistory
+        key='HISTORY'
+        interactableID={interactableID}
+        exitMenuCallback={exitMenuCallback}
+      />
+    ),
+  };
+
+  useEffect(() => {
+    gameAreaController.sendRequestSafely(async () => {
+      await gameAreaController.getHistory();
+    }, toast);
+  }, [gameAreaController, toast]);
+
+  async function onJoinButtonClick() {
+    await gameAreaController.sendRequestSafely(async () => {
+      await gameAreaController.joinGame();
+    }, toast);
+  }
+
   return (
     <StackDivider>
-      {/* Using separate Center components causes child components to be in separate rows. */}
-      <Center>
-        <Text>{gameModel?.players.length ?? 0}/2 Players</Text>
-      </Center>
-      <Center>
-        <Button
-          margin={BUTTON_MARGIN}
-          disabled={(gameModel?.players.length ?? 0) >= 2 || isPlayer()}>
-          Join Game
-        </Button>
-      </Center>
-      <Center>
-        <Button margin={BUTTON_MARGIN}>View Leaderboards</Button>
-        <Button margin={BUTTON_MARGIN}>View Game History</Button>
-      </Center>
+      {currentMenu ? (
+        currentMenu
+      ) : (
+        <StackDivider>
+          {/* Using separate Center components causes child components to be in separate rows. */}
+          <Center>
+            <Text>
+              <b>New Game</b>
+            </Text>
+          </Center>
+          <br />
+          <Center>
+            <Text>{gameModel?.players.length ?? 0}/2 Players</Text>
+          </Center>
+          <Center>
+            <Button
+              margin={BUTTON_MARGIN}
+              disabled={(gameModel?.players.length ?? 0) >= 2 || gameAreaController.isPlayer}
+              onClick={onJoinButtonClick}>
+              Join Game
+            </Button>
+          </Center>
+          <Center>
+            <Button
+              margin={BUTTON_MARGIN}
+              onClick={() => {
+                setCurrentMenu(menus.RULES);
+              }}>
+              View Rules
+            </Button>
+            <Button
+              margin={BUTTON_MARGIN}
+              onClick={() => {
+                setCurrentMenu(menus.LEADERBOARD);
+              }}>
+              View Leaderboards
+            </Button>
+            <Button
+              margin={BUTTON_MARGIN}
+              onClick={() => {
+                setCurrentMenu(menus.HISTORY);
+              }}>
+              View Game History
+            </Button>
+          </Center>
+        </StackDivider>
+      )}
     </StackDivider>
   );
 }

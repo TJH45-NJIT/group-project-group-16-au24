@@ -108,7 +108,8 @@ export function BattleShipBoard({
       ref={canvasRef}
       width={width}
       height={width}
-      style={{ border: `${width / 50}px solid` }}
-      onClick={processCanvasClick}></canvas>
+      style={{ border: `${width / 50}px solid`, userSelect: 'none' }}
+      onClick={processCanvasClick}
+    />
   );
 }

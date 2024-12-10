@@ -5,6 +5,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  StackDivider,
   Text,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -26,46 +27,44 @@ function BattleShipArea({ interactableID }: { interactableID: InteractableID }):
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
   const [gameModel, setGameModel] = useState<GameInstance<BattleShipGameState>>();
+  // Having a separate internalState state instead of just using the model guarantees that
+  // this internalState will always be defined, making the conditionals in the return cleaner.
   const [internalState, setInternalState] = useState<BattleShipGameStatus>('GAME_WAIT');
 
   useEffect(() => {
     const deliverUpdatedModel = () => {
       const gameModelRaw = gameAreaController.toInteractableAreaModel().game;
-      if (gameModelRaw !== undefined) {
-        setGameModel(gameModelRaw);
-        setInternalState(gameModelRaw.state.internalState);
-      }
+      if (gameModelRaw !== undefined) setInternalState(gameModelRaw.state.internalState);
+      else setInternalState('GAME_WAIT');
+      setGameModel(gameModelRaw);
     };
     gameAreaController.addListener('gameUpdated', deliverUpdatedModel);
+    deliverUpdatedModel();
     return () => {
       gameAreaController.removeListener('gameUpdated', deliverUpdatedModel);
     };
   }, [gameAreaController]);
 
   return (
-    <div>
+    <StackDivider>
       {internalState === 'GAME_WAIT' ? (
-        <BattleShipGameWaitView
-          interactableID={interactableID}
-          gameModel={gameModel}></BattleShipGameWaitView>
+        <BattleShipGameWaitView interactableID={interactableID} gameModel={gameModel} />
       ) : internalState === 'GAME_START' ? (
         <BattleShipGameStartView
           interactableID={interactableID}
-          gameModel={
-            gameModel as unknown as GameInstance<BattleShipGameState>
-          }></BattleShipGameStartView>
+          gameModel={gameModel as unknown as GameInstance<BattleShipGameState>}
+        />
       ) : internalState === 'GAME_MAIN' || internalState === 'GAME_END' ? (
         <BattleShipGameMainView
           interactableID={interactableID}
-          gameModel={
-            gameModel as unknown as GameInstance<BattleShipGameState>
-          }></BattleShipGameMainView>
+          gameModel={gameModel as unknown as GameInstance<BattleShipGameState>}
+        />
       ) : (
         <Center>
           <Text>An unexpected error occurred.</Text>
         </Center>
       )}
-    </div>
+    </StackDivider>
   );
 }
 

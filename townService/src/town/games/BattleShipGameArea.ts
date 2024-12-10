@@ -1,27 +1,26 @@
-import {
+import InvalidParametersError, {
   GAME_ID_MISSMATCH_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
   INVALID_COMMAND_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  BattleShipGameState,
   BattleShipMove,
+  GameInstance,
   GameMoveCommand,
   InteractableCommand,
   InteractableCommandReturnType,
   InteractableType,
-  JoinSpectatorCommand,
   LeaveGameCommand,
-  LeaveSpectatorCommand,
+  NewGameCommand,
 } from '../../types/CoveyTownSocket';
 import BattleShipGame from './BattleShipGame';
 import GameArea from './GameArea';
 
 export default class BattleShipGameArea extends GameArea<BattleShipGame> {
-  // eslint-disable-next-line class-methods-use-this
-  playersInGame: Player[] = [];
-
-  observersInGame: Player[] = [];
+  // Extra history storage is necessary to retrieve final boards.
+  private _gameHistory: BattleShipGame[] = [];
 
   // eslint-disable-next-line class-methods-use-this
   protected getType(): InteractableType {
@@ -38,7 +37,6 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   ): InteractableCommandReturnType<CommandType> {
     if (this._game === undefined) this._game = new BattleShipGame();
     this._game.join(player);
-    this.playersInGame?.push(player);
     this._emitAreaChanged();
     return { gameID: this._game.id } as InteractableCommandReturnType<CommandType>;
   }
@@ -53,8 +51,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: LeaveGameCommand,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this._game.leave(player);
     this._emitAreaChanged();
     return undefined as InteractableCommandReturnType<CommandType>;
@@ -70,8 +69,9 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     command: GameMoveCommand<BattleShipMove>,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.gameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     this._game.applyMove({
       gameID: command.gameID,
       playerID: player.id,
@@ -82,39 +82,61 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   }
 
   /**
-   * Deals with Join Spectator commands
+   * Deals with NewGameCommands commands
    * Helper Method handle command
    * @param command The sent command
-   * @param player The player who sent the command
    */
-  handleSpectatorJoinCommand<CommandType extends InteractableCommand>(
-    command: JoinSpectatorCommand,
-    player: Player,
+  public handleNewGameCommand<CommandType extends InteractableCommand>(
+    command: NewGameCommand,
   ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
-    this.observersInGame.push(player);
-    this._occupants.push(player);
-    this._emitAreaChanged();
-    return { gameID: this._game.id } as InteractableCommandReturnType<CommandType>;
+    if (this._game === undefined) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    if (this._game.id !== command.prevgameID)
+      throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
+    if (this._game?.state.status === 'OVER') {
+      const { p1Username, p2Username } = this._game.state;
+      if (p1Username && p2Username) {
+        this._history.push({
+          gameID: this._game.id,
+          scores: {
+            [p1Username]: this._game.state.p2SunkenShips.length,
+            [p2Username]: this._game.state.p1SunkenShips.length,
+          },
+        });
+      }
+      this._gameHistory.push(this._game);
+      this._game = undefined;
+      this._emitAreaChanged();
+    }
+    return undefined as InteractableCommandReturnType<CommandType>;
   }
 
   /**
-   * Deals with Leave Spectator commands
+   * Deals with NewGameCommands commands
    * Helper Method handle command
    * @param command The sent command
-   * @param player The player who sent the command
+   * scores: { [p1]: this.gameHistory[i].state.p2SunkenShips.length }, -- this might cuase errors later
    */
-  public handleSpectatorLeaveCommand<CommandType extends InteractableCommand>(
-    command: LeaveSpectatorCommand,
-    player: Player,
-  ): InteractableCommandReturnType<CommandType> {
-    if (this._game === undefined) throw new Error(GAME_NOT_IN_PROGRESS_MESSAGE);
-    if (this._game.id !== command.gameID) throw new Error(GAME_ID_MISSMATCH_MESSAGE);
-    this.observersInGame = this.observersInGame.filter(p => p.id !== player.id);
-    this._occupants = this.occupants.filter(p => p.id !== player.id);
-    this._emitAreaChanged();
-    return undefined as InteractableCommandReturnType<CommandType>;
+  public handleGetHistoryCommand<
+    CommandType extends InteractableCommand,
+  >(): InteractableCommandReturnType<CommandType> {
+    const gameHistoryInstanceList: GameInstance<BattleShipGameState>[] = [];
+    for (let i = 0; i < this._gameHistory.length; i++) {
+      const { p1, p2, p1Username, p2Username } = this._gameHistory[i].state;
+      if (p1 && p2)
+        gameHistoryInstanceList.push({
+          state: this._gameHistory[i].state,
+          id: this._gameHistory[i].id,
+          players: [p1, p2],
+          result: {
+            gameID: this._gameHistory[i].id,
+            scores: {
+              [p1Username]: this._gameHistory[i].state.p2SunkenShips.length,
+              [p2Username]: this._gameHistory[i].state.p1SunkenShips.length,
+            },
+          },
+        });
+    }
+    return { gameHistory: gameHistoryInstanceList } as InteractableCommandReturnType<CommandType>;
   }
 
   /**
@@ -130,8 +152,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (command.type === 'JoinGame') return this.handleJoinCommand(player);
     if (command.type === 'LeaveGame') return this.handleLeaveCommand(command, player);
     if (command.type === 'GameMove') return this.handleGameMoveCommand(command, player);
-    if (command.type === 'JoinSpectator') return this.handleSpectatorJoinCommand(command, player);
-    if (command.type === 'LeaveSpectator') return this.handleSpectatorLeaveCommand(command, player);
-    throw new Error(INVALID_COMMAND_MESSAGE);
+    if (command.type === 'NewGame') return this.handleNewGameCommand(command);
+    if (command.type === 'GetHistory') return this.handleGetHistoryCommand();
+    throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
   }
 }

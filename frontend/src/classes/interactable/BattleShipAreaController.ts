@@ -1,3 +1,4 @@
+import { ToastId, UseToastOptions } from '@chakra-ui/react';
 import {
   GameArea,
   GameStatus,
@@ -5,8 +6,9 @@ import {
   BattleShipMove,
   BattleShipGameStatus,
   BattleShipGameState,
-  BattleShipBoardMarker,
   BattleShipBoardPiece,
+  NewGameCommand,
+  GameInstance,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
@@ -18,9 +20,6 @@ export const NOT_SETUP_PHASE = 'Game is no longer in Setup Phase';
 export const NOT_ATTACK_PHASE = 'Game is not in the Attack Phase';
 
 export type BattleShipEvents = GameEventTypes & {
-  shipBoardSet: (ourShipBoard: BattleShipBoardPiece[][] | undefined) => void;
-  ourMarkerBoardChange: (ourMarkerBoard: BattleShipBoardMarker[][] | undefined) => void;
-  theirMarkerBoardChange: (theirMarkerBoard: BattleShipBoardMarker[][] | undefined) => void;
   turnChanged: (isOurTurn: boolean) => void;
 };
 
@@ -28,28 +27,7 @@ export default class BattleShipAreaController extends GameAreaController<
   BattleShipGameState,
   BattleShipEvents
 > {
-  get ourShipBoard(): BattleShipBoardPiece[][] | undefined {
-    if (this.isP2) {
-      return this._model.game?.state.p2Board;
-    }
-    return this._model.game?.state.p1Board; //TODO Unsure how this will interact with forntend and where boards are updated
-  } //TODO May need to take out the possibility of undefined return
-
-  //Identifies the left MarkerBoard
-  get ourMarkerBoard(): BattleShipBoardMarker[][] | undefined {
-    if (this.isP2) {
-      return this._model.game?.state.p2MarkerBoard;
-    }
-    return this._model.game?.state.p1MarkerBoard;
-  }
-
-  //Identifies the right MarkerBoard
-  get theirMarkerBoard(): BattleShipBoardMarker[][] | undefined {
-    if (this.isP2) {
-      return this._model.game?.state.p1MarkerBoard;
-    }
-    return this._model.game?.state.p2MarkerBoard;
-  }
+  gameHistory: GameInstance<BattleShipGameState>[] = [];
 
   get p1(): PlayerController | undefined {
     const p1 = this._players.find(player => player.id === this._model.game?.state.p1);
@@ -85,10 +63,6 @@ export default class BattleShipAreaController extends GameAreaController<
     return undefined; //TODO ^
   }
 
-  get isLastShipSunk(): boolean {
-    return false; //TODO ^
-  }
-
   get isPlayer(): boolean {
     if (
       this._townController.ourPlayer.id === this.p1?.id ||
@@ -115,32 +89,47 @@ export default class BattleShipAreaController extends GameAreaController<
     return this._model.game?.state.internalState ?? 'GAME_WAIT';
   }
 
+  get leaderboard(): Map<string, number> {
+    const leaderboard = new Map<string, number>();
+    for (let i = 0; i < this.gameHistory.length; i++) {
+      const state = this.gameHistory[i].state;
+      const winnerUserName = state.winner === state.p1 ? state.p1Username : state.p2Username;
+      const wins = leaderboard.get(winnerUserName);
+      if (wins === undefined) leaderboard.set(winnerUserName, 1);
+      else leaderboard.set(winnerUserName, wins + 1);
+    }
+    return leaderboard;
+  }
+
   public isActive(): boolean {
     return this.status === 'IN_PROGRESS';
   }
 
   protected _updateFrom(newModel: GameArea<BattleShipGameState>): void {
-    const oldState: BattleShipGameStatus = this.internalState;
     const lastTurnPlayer: PlayerController | undefined = this.whoseTurn;
     super._updateFrom(newModel);
     if (newModel.game === undefined) return;
-    if (oldState === 'GAME_START' && this.internalState === 'GAME_MAIN')
-      this.emit('shipBoardSet', this.ourShipBoard); //TODO May need a isPlayer check
     if (lastTurnPlayer === this.whoseTurn) return;
-    if (this.isP2) {
-      if (this.whoseTurn === this.p1) {
-        this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
-      } else {
-        this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
-      }
-    } else {
-      if (this.whoseTurn === this.p1) {
-        this.emit('ourMarkerBoardChange', this.ourMarkerBoard);
-      } else {
-        this.emit('theirMarkerBoardChange', this.theirMarkerBoard);
-      }
-    }
     this.emit('turnChanged', this.isOurTurn);
+  }
+
+  public async getHistory() {
+    const { gameHistory } = await this._townController.sendInteractableCommand(this.id, {
+      type: 'GetHistory',
+    });
+    this.gameHistory = gameHistory;
+  }
+
+  public async resetGame() {
+    if (this._model.game === undefined || this._instanceID === undefined)
+      throw new Error(NO_GAME_IN_PROGRESS_ERROR);
+    if (this.internalState == 'GAME_END') {
+      const newGameCommand: NewGameCommand = {
+        type: 'NewGame',
+        prevgameID: this._instanceID,
+      };
+      await this._townController.sendInteractableCommand(this.id, newGameCommand);
+    }
   }
 
   public async makeSetupMove(initBoard: BattleShipBoardPiece[][]) {
@@ -152,7 +141,7 @@ export default class BattleShipAreaController extends GameAreaController<
       gameID: this._instanceID,
       move: initBoard,
     };
-    await this._townController.sendInteractableCommand(this._model.game.id, setupCommand);
+    await this._townController.sendInteractableCommand(this.id, setupCommand);
   }
 
   public async makeAttackMove(posX: number, posY: number) {
@@ -167,6 +156,22 @@ export default class BattleShipAreaController extends GameAreaController<
         posY: posY,
       },
     };
-    await this._townController.sendInteractableCommand(this._model.game.id, attackCommand);
+    await this._townController.sendInteractableCommand(this.id, attackCommand);
+  }
+
+  public async sendRequestSafely(
+    requestCallback: () => Promise<void>,
+    toast: { (options?: UseToastOptions | undefined): ToastId | undefined },
+  ): Promise<boolean> {
+    try {
+      await requestCallback();
+      return true;
+    } catch (error) {
+      toast({
+        description: (error as Error).toString(),
+        status: 'error',
+      });
+      return false;
+    }
   }
 }

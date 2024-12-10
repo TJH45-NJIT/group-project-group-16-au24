@@ -1,15 +1,14 @@
-import { Button, Center, StackDivider, Text } from '@chakra-ui/react';
-import React, { useCallback, useState } from 'react';
+import { Button, Center, StackDivider, Text, useToast } from '@chakra-ui/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BattleShipAreaController from '../../../../classes/interactable/BattleShipAreaController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
-import useTownController from '../../../../hooks/useTownController';
 import {
   BattleShipBoardPiece,
   BattleShipGameState,
   GameInstance,
   InteractableID,
 } from '../../../../types/CoveyTownSocket';
-import { BattleShipBoard } from './BattleShipBoard';
+import { BattleShipSetupBoard } from './BattleShipSetupBoard';
 
 const OPPONENT_READY_TEXT = 'Opponent is ready.';
 const OPPONENT_NOT_READY_TEXT = 'Opponent is not ready yet.';
@@ -23,79 +22,102 @@ export function BattleShipGameStartView({
   interactableID,
   gameModel,
 }: BattleShipGameStartViewProps): JSX.Element {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameAreaController =
     useInteractableAreaController<BattleShipAreaController>(interactableID);
-  const townController = useTownController();
+  const toast = useToast();
+  const [mounted, setMounted] = useState<boolean>(false); // Prevents a memory leak warning
+  const [changesSubmitted, setChangesSubmitted] = useState<boolean>(false);
 
-  // This hardcoded initial board is temporary and only here in the first place to get us through the demo.
-  const [initialBoard] = useState<BattleShipBoardPiece[][]>([
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,  'Destroyer' ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,  'Submarine',  'Submarine',  'Submarine',    undefined,  'Destroyer' ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    'Carrier',    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    'Cruiser',    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [ 'Battleship', 'Battleship', 'Battleship', 'Battleship',    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
-    // eslint-disable-next-line prettier/prettier
-    [    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined,    undefined ],
+  const [initialBoard, setInitialBoard] = useState<BattleShipBoardPiece[][]>([
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
   ]);
 
-  // Temporary functions to be replaced with BattleShipAreaController
-  // equivalents when that becomes available:
-  const isPlayer = useCallback((): boolean => {
-    return (
-      townController.ourPlayer.id === gameModel.state.p1 ||
-      townController.ourPlayer.id === gameModel.state.p2
-    );
-  }, [gameModel.state.p1, gameModel.state.p2, townController.ourPlayer.id]);
-  const isP1 = useCallback((): boolean => {
-    return townController.ourPlayer.id === gameModel.state.p1;
-  }, [gameModel.state.p1, townController.ourPlayer.id]);
+  const updateInitialBoard = useCallback((newBoard: BattleShipBoardPiece[][]) => {
+    setInitialBoard(newBoard);
+    setChangesSubmitted(false);
+  }, []);
+
+  async function onSubmitButtonClick() {
+    if (mounted) {
+      if (
+        await gameAreaController.sendRequestSafely(async () => {
+          await gameAreaController.makeSetupMove(initialBoard);
+        }, toast)
+      )
+        setChangesSubmitted(true);
+    }
+  }
+
+  useEffect(() => {
+    setMounted(true);
+    return () => {
+      setMounted(false);
+    };
+  }, []);
 
   return (
-    <Center>
-      {isPlayer() ? (
+    <StackDivider>
+      {gameAreaController.isPlayer ? (
         <StackDivider>
-          <BattleShipBoard /* This will eventually be replaced with a proper editable board. */
-            initialBoard={initialBoard}
-            displayInitialBoard={true}
-            markerBoard={[]}></BattleShipBoard>
-          <Text>
-            <br />
-            Click and drag your ships to where you want them to be placed.
-            <br />
-            When you are ready to start the game, click the button below.
-            <br />
-          </Text>
-          <Button>Submit</Button>
-          <Text>
-            {isP1()
-              ? gameModel.state.p2InitialBoard.length === 0
+          <Center>
+            <BattleShipSetupBoard deliverModifiedBoard={updateInitialBoard} />
+          </Center>
+          <br />
+          <Center>
+            <Text>Left click and drag your ships to where you want them to be placed.</Text>
+          </Center>
+          <Center>
+            <Text>
+              Right click on a ship to rotate it, which will only work if there is enough space.
+            </Text>
+          </Center>
+          <Center>
+            <Text>
+              All ships must be completely enclosed within the middle 10×10 squares for the board to
+              be considered valid.
+            </Text>
+          </Center>
+          <Center>
+            <Text>
+              When you are ready to submit your board and start the game, click the button below.
+            </Text>
+          </Center>
+          <br />
+          <Center>
+            <Button onClick={onSubmitButtonClick} disabled={changesSubmitted}>
+              Submit
+            </Button>
+          </Center>
+          <br />
+          <Center>
+            <Text>
+              {gameAreaController.isP1
+                ? gameModel.state.p2InitialBoard.length === 0
+                  ? OPPONENT_NOT_READY_TEXT
+                  : OPPONENT_READY_TEXT
+                : gameModel.state.p1InitialBoard.length === 0
                 ? OPPONENT_NOT_READY_TEXT
-                : OPPONENT_READY_TEXT
-              : gameModel.state.p1InitialBoard.length === 0
-              ? OPPONENT_NOT_READY_TEXT
-              : OPPONENT_READY_TEXT}
-          </Text>
+                : OPPONENT_READY_TEXT}
+            </Text>
+          </Center>
         </StackDivider>
       ) : (
-        <Text>
-          The players are currently placing their ships. You will be able to watch the game when
-          they finish setting up!
-        </Text>
+        <Center>
+          <Text>
+            The players are currently placing their ships. You will be able to watch the game when
+            they finish setting up!
+          </Text>
+        </Center>
       )}
-    </Center>
+    </StackDivider>
   );
 }

@@ -112,6 +112,8 @@ export type BattleShipMove = BattleShipSetupMove | BattleShipAttackMove;
 export interface BattleShipGameState extends WinnableGameState {
   p1?: PlayerID;
   p2?: PlayerID;
+  p1Username: string;
+  p2Username: string;
   p1InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
   p2InitialBoard: ReadonlyArray<ReadonlyArray<BattleShipBoardPiece>>;
   p1Board: BattleShipBoardPiece[][];
@@ -180,17 +182,13 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand | JoinSpectatorCommand | LeaveSpectatorCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BattleShipMove> | LeaveGameCommand | NewGameCommand | GetHistoryCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
 }
 export interface JoinGameCommand {
   type: 'JoinGame';
-}
-export interface LeaveSpectatorCommand {
-  type: 'LeaveSpectator';
-  gameID: GameInstanceID;
 }
 export interface LeaveGameCommand {
   type: 'LeaveGame';
@@ -201,13 +199,17 @@ export interface GameMoveCommand<MoveType> {
   gameID: GameInstanceID;
   move: MoveType;
 }
-export interface JoinSpectatorCommand{
-  type: 'JoinSpectator';
-  gameID: GameInstanceID;
+export interface NewGameCommand{
+  type: 'NewGame';
+  prevgameID: GameInstanceID;
+}
+export interface GetHistoryCommand{
+  type: 'GetHistory'
 }
 export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
   CommandType extends JoinGameCommand ? { gameID: string}:
   CommandType extends JoinSpectatorCommand ? { gameID: string}:
+  CommandType extends GetHistoryCommand ? {gameHistory: GameInstance[]}:
   CommandType extends ViewingAreaUpdateCommand ? undefined :
   CommandType extends GameMoveCommand<BattleShipMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :
