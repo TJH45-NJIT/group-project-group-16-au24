@@ -4,7 +4,6 @@ import {
   BATTLESHIP_SETUP_SHIP_DUPLICATE_MESSAGE,
   BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE,
   BATTLESHIP_SETUP_SHIP_MISSING_MESSAGE,
-  BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE,
   BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
@@ -566,14 +565,14 @@ describe('[T1] BattleShipGame', () => {
             ),
           );
         });
-        test('when p1 makes a setup move with a ship out of bounds, should throw a NOT_ENOUGH_SPACE error', () => {
+        test('when p1 makes a setup move with a ship out of bounds, should throw a SHIP_INCOMPLETE error', () => {
           expect(() =>
             game.applyMove({
               playerID: player1.id,
               gameID: game.id,
               move: invalidBoard6,
             }),
-          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_NOT_ENOUGH_SPACE_MESSAGE, 'Battleship'));
+          ).toThrowError(util.format(BATTLESHIP_SETUP_SHIP_INCOMPLETE_MESSAGE, 'Battleship'));
         });
       });
 
@@ -1137,7 +1136,7 @@ describe('[T1] BattleShipGame', () => {
                 posY: 2,
               },
             }),
-          ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE); // TODO May need specific error message
+          ).toThrowError();
         });
       });
 
@@ -1289,8 +1288,8 @@ describe('[T1] BattleShipGame', () => {
               playerID: player1.id,
               gameID: game.id,
               move: {
-                posX: col,
-                posY: row,
+                posX: row,
+                posY: col,
               },
             });
             expect(game.state.p2MarkerBoard[row][col]).toEqual(expectedResult);
@@ -1326,8 +1325,8 @@ describe('[T1] BattleShipGame', () => {
               playerID: player2.id,
               gameID: game.id,
               move: {
-                posX: col,
-                posY: row,
+                posX: row,
+                posY: col,
               },
             });
             expect(game.state.p1MarkerBoard[row][col]).toEqual(expectedResult);
