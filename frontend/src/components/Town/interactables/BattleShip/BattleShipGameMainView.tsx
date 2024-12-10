@@ -38,9 +38,9 @@ export function BattleShipGameMainView({
   }
 
   useEffect(() => {
-    if (gameModel.state.hitOrMiss) {
+    if (gameModel.state.lastMoveHit) {
       if (gameAreaController.isPlayer) {
-        if (gameModel.state.p1 === townController.ourPlayer.id) {
+        if (gameAreaController.isP1) {
           if (gameModel.state.turnPlayer === townController.ourPlayer.id) {
             if (gameModel.state.p1SunkenShips.includes(gameModel.state.lastShipHit)) {
               toast({
@@ -148,9 +148,10 @@ export function BattleShipGameMainView({
     }
   }, [
     gameAreaController.isPlayer,
+    gameAreaController.isP1,
     gameModel.state.internalState,
     gameModel.state.p1,
-    gameModel.state.hitOrMiss,
+    gameModel.state.lastMoveHit,
     gameModel.state.lastShipHit,
     gameModel.state.p1SunkenShips,
     gameModel.state.p2SunkenShips,
@@ -159,6 +160,7 @@ export function BattleShipGameMainView({
     gameModel.state.turnPlayer,
     gameModel.state.winner,
     townController.ourPlayer.id,
+    toast,
   ]);
 
   return (
