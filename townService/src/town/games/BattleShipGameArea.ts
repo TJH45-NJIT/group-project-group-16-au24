@@ -19,7 +19,8 @@ import BattleShipGame from './BattleShipGame';
 import GameArea from './GameArea';
 
 export default class BattleShipGameArea extends GameArea<BattleShipGame> {
-  gameHistory: BattleShipGame[] = [];
+  // Extra history storage is necessary to retrieve final boards.
+  private _gameHistory: BattleShipGame[] = [];
 
   // eslint-disable-next-line class-methods-use-this
   protected getType(): InteractableType {
@@ -92,7 +93,17 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     if (this._game.id !== command.prevgameID)
       throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
     if (this._game?.state.status === 'OVER') {
-      this.gameHistory.push(this._game);
+      const { p1Username, p2Username } = this._game.state;
+      if (p1Username && p2Username) {
+        this._history.push({
+          gameID: this._game.id,
+          scores: {
+            [p1Username]: this._game.state.p2SunkenShips.length,
+            [p2Username]: this._game.state.p1SunkenShips.length,
+          },
+        });
+      }
+      this._gameHistory.push(this._game);
       this._game = undefined;
       this._emitAreaChanged();
     }
@@ -109,19 +120,18 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
     CommandType extends InteractableCommand,
   >(): InteractableCommandReturnType<CommandType> {
     const gameHistoryInstanceList: GameInstance<BattleShipGameState>[] = [];
-    for (let i = 0; i < this.gameHistory.length; i++) {
-      const { p1 } = this.gameHistory[i].state;
-      const { p2 } = this.gameHistory[i].state;
+    for (let i = 0; i < this._gameHistory.length; i++) {
+      const { p1, p2, p1Username, p2Username } = this._gameHistory[i].state;
       if (p1 && p2)
         gameHistoryInstanceList.push({
-          state: this.gameHistory[i].state,
-          id: this.gameHistory[i].id,
+          state: this._gameHistory[i].state,
+          id: this._gameHistory[i].id,
           players: [p1, p2],
           result: {
-            gameID: this.gameHistory[i].id,
+            gameID: this._gameHistory[i].id,
             scores: {
-              [p1]: this.gameHistory[i].state.p2SunkenShips.length,
-              [p2]: this.gameHistory[i].state.p1SunkenShips.length,
+              [p1Username]: this._gameHistory[i].state.p2SunkenShips.length,
+              [p2Username]: this._gameHistory[i].state.p1SunkenShips.length,
             },
           },
         });
