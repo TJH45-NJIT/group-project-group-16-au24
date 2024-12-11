@@ -88,7 +88,7 @@ export default abstract class GameAreaController<
       newModel.game?.players.map(playerID => this._townController.getPlayer(playerID)) ?? [];
     if (!newPlayers && this._players.length > 0) {
       this._players = [];
-      //TODO - Bounty for figuring out how to make the types work here
+      //TODO - Bounty for figuring out how to make the types work here (a cast that should work doesn't work due to a false positive)
       //eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.emit('playersChange', []);
@@ -98,19 +98,19 @@ export default abstract class GameAreaController<
       _.xor(newPlayers, this._players).length > 0
     ) {
       this._players = newPlayers;
-      //TODO - Bounty for figuring out how to make the types work here
+      //TODO - Bounty for figuring out how to make the types work here (a cast that should work doesn't work due to a false positive)
       //eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.emit('playersChange', newPlayers);
     }
     this._model = newModel;
-    //TODO - Bounty for figuring out how to make the types work here
+    //TODO - Bounty for figuring out how to make the types work here (a cast that should work doesn't work due to a false positive)
     //eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.emit('gameUpdated');
     this._instanceID = newModel.game?.id ?? this._instanceID;
     if (gameEnding) {
-      //TODO - Bounty for figuring out how to make the types work here
+      //TODO - Bounty for figuring out how to make the types work here (a cast that should work doesn't work due to a false positive)
       //eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.emit('gameEnd');

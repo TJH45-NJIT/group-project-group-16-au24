@@ -22,9 +22,8 @@ export default class BattleShipGameArea extends GameArea<BattleShipGame> {
   // Extra history storage is necessary to retrieve final boards.
   private _gameHistory: BattleShipGame[] = [];
 
-  // eslint-disable-next-line class-methods-use-this
   protected getType(): InteractableType {
-    return 'BattleShipArea';
+    return this.isActive ? 'BattleShipArea' : 'InvalidArea';
   }
 
   /**
