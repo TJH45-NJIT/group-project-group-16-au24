@@ -51,6 +51,8 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
    * @param move The provided move to process.
    */
   public applyMove(move: GameMove<BattleShipMove>): void {
+    if (this.state.status !== 'IN_PROGRESS')
+      throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
     if (Array.isArray(move.move)) {
       this._applySetupMove(move.playerID, move.move);
     } else if (typeof move.move === 'object' && 'posX' in move.move && 'posY' in move.move) {
@@ -192,6 +194,10 @@ export default class BattleShipGame extends Game<BattleShipGameState, BattleShip
   protected _applySetupMove(playerID: PlayerID, board: BattleShipBoardPiece[][]): void {
     if (playerID !== this.state.p1 && playerID !== this.state.p2)
       throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (playerID === this.state.p1 && this.state.p1InitialBoard.length === 10)
+      throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
+    if (playerID === this.state.p2 && this.state.p2InitialBoard.length === 10)
+      throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     const checkedSpots: boolean[][] = [[], [], [], [], [], [], [], [], [], []];
     const missingShips: BattleShipBoardPiece[] = [
       'Destroyer',
