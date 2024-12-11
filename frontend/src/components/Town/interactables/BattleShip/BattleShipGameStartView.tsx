@@ -43,7 +43,6 @@ export function BattleShipGameStartView({
 
   const updateInitialBoard = useCallback((newBoard: BattleShipBoardPiece[][]) => {
     setInitialBoard(newBoard);
-    setChangesSubmitted(false);
   }, []);
 
   async function onSubmitButtonClick() {
