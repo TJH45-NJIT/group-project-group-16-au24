@@ -8,7 +8,6 @@ import {
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
-  GameInstance,
   GameInstanceID,
   BattleShipGameState,
   BattleShipMove,
@@ -407,7 +406,8 @@ describe('[T2] BattleShipGameArea', () => {
           expect(game.state.status).toEqual('OVER');
           gameArea.handleCommand({ type: 'NewGame', prevgameID: gameID }, player1);
           expect(gameArea.handleCommand({ type: 'GetHistory' }, player1)).toEqual({
-            gameHistory: [{
+            gameHistory: [
+              {
                 id: game.id,
                 players: [player1.id, player2.id],
                 result: {
@@ -449,7 +449,8 @@ describe('[T2] BattleShipGameArea', () => {
           expect(game.state.status).toEqual('OVER');
           gameArea.handleCommand({ type: 'NewGame', prevgameID: gameID }, player2);
           expect(gameArea.handleCommand({ type: 'GetHistory' }, player1)).toEqual({
-            gameHistory: [{
+            gameHistory: [
+              {
                 id: game.id,
                 players: [player1.id, player2.id],
                 result: {
