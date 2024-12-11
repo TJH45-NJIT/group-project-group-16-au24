@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BattleShipBoardPiece } from '../../../../types/CoveyTownSocket';
 
+const RESOURCE_PATH = '';
+
 class Ship {
   private readonly _piece: BattleShipBoardPiece;
 
-  private readonly _length: number;
+  public readonly length: number;
 
   public x: number;
 
@@ -12,10 +14,13 @@ class Ship {
 
   public isVertical: boolean;
 
+  public verticalImage: HTMLImageElement;
+
+  public horizontalImage: HTMLImageElement;
+
   private _restoreCell: (x: number, y: number) => void;
 
-  // To be replaced eventually with proper ship rendering when available
-  private _blackenCell: (x: number, y: number) => void;
+  private _drawShip: (x: number, y: number, ship: Ship) => void;
 
   constructor(
     piece: BattleShipBoardPiece,
@@ -23,35 +28,33 @@ class Ship {
     x: number,
     y: number,
     restoreCell: (x: number, y: number) => void,
-    blackenCell: (x: number, y: number) => void,
+    drawShip: (x: number, y: number, ship: Ship) => void,
+    verticalImage: HTMLImageElement,
+    horizontalImage: HTMLImageElement,
   ) {
     this._piece = piece;
-    this._length = length;
+    this.length = length;
     this.x = x;
     this.y = y;
     this.isVertical = true;
     this._restoreCell = restoreCell;
-    this._blackenCell = blackenCell;
+    this._drawShip = drawShip;
+    this.verticalImage = verticalImage;
+    this.horizontalImage = horizontalImage;
   }
 
   get piece() {
     return this._piece;
   }
 
-  get length() {
-    return this._length;
-  }
-
   public erase() {
     if (this.isVertical)
-      for (let i = 0; i < this._length; i++) this._restoreCell(this.x, this.y + i);
-    else for (let i = 0; i < this._length; i++) this._restoreCell(this.x + i, this.y);
+      for (let i = 0; i < this.length; i++) this._restoreCell(this.x, this.y + i);
+    else for (let i = 0; i < this.length; i++) this._restoreCell(this.x + i, this.y);
   }
 
   public draw() {
-    if (this.isVertical)
-      for (let i = 0; i < this._length; i++) this._blackenCell(this.x, this.y + i);
-    else for (let i = 0; i < this._length; i++) this._blackenCell(this.x + i, this.y);
+    this._drawShip(this.x, this.y, this);
   }
 }
 
@@ -76,7 +79,16 @@ export function BattleShipSetupBoard({
   deliverModifiedBoard = () => {},
 }: BattleShipSetupBoardProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Put sprite images here when available.
+  const [destroyerVertical] = useState<HTMLImageElement>(new Image());
+  const [destroyerHorizontal] = useState<HTMLImageElement>(new Image());
+  const [submarineVertical] = useState<HTMLImageElement>(new Image());
+  const [submarineHorizontal] = useState<HTMLImageElement>(new Image());
+  const [cruiserVertical] = useState<HTMLImageElement>(new Image());
+  const [cruiserHorizontal] = useState<HTMLImageElement>(new Image());
+  const [battleshipVertical] = useState<HTMLImageElement>(new Image());
+  const [battleshipHorizontal] = useState<HTMLImageElement>(new Image());
+  const [carrierVertical] = useState<HTMLImageElement>(new Image());
+  const [carrierHorizontal] = useState<HTMLImageElement>(new Image());
 
   const [cellWidth, setCellWidth] = useState<number>(width / 16);
   useEffect(() => {
@@ -95,23 +107,45 @@ export function BattleShipSetupBoard({
     [cellWidth],
   );
 
-  const blackenCell = useCallback(
-    (x: number, y: number) => {
+  const drawShip = useCallback(
+    (x: number, y: number, ship: Ship) => {
       const context = canvasRef.current?.getContext('2d');
       if (context === null || context === undefined) return;
-
-      context.fillStyle = 'black';
-      context.fillRect((x + 3) * cellWidth, y * cellWidth, cellWidth, cellWidth);
+      if (ship.isVertical)
+        context.drawImage(
+          ship.verticalImage,
+          (x + 3) * cellWidth,
+          y * cellWidth,
+          cellWidth,
+          cellWidth * ship.length,
+        );
+      else
+        context.drawImage(
+          ship.horizontalImage,
+          (x + 3) * cellWidth,
+          y * cellWidth,
+          cellWidth * ship.length,
+          cellWidth,
+        );
     },
     [cellWidth],
   );
 
   const [ships] = useState<Ship[]>([
-    new Ship('Destroyer', 2, -2, 0, restoreCell, blackenCell),
-    new Ship('Submarine', 3, -2, 3, restoreCell, blackenCell),
-    new Ship('Cruiser', 3, -2, 7, restoreCell, blackenCell),
-    new Ship('Battleship', 4, 11, 0, restoreCell, blackenCell),
-    new Ship('Carrier', 5, 11, 5, restoreCell, blackenCell),
+    new Ship('Destroyer', 2, -2, 0, restoreCell, drawShip, destroyerVertical, destroyerHorizontal),
+    new Ship('Submarine', 3, -2, 3, restoreCell, drawShip, submarineVertical, submarineHorizontal),
+    new Ship('Cruiser', 3, -2, 7, restoreCell, drawShip, cruiserVertical, cruiserHorizontal),
+    new Ship(
+      'Battleship',
+      4,
+      11,
+      0,
+      restoreCell,
+      drawShip,
+      battleshipVertical,
+      battleshipHorizontal,
+    ),
+    new Ship('Carrier', 5, 11, 5, restoreCell, drawShip, carrierVertical, carrierHorizontal),
   ]);
 
   function generateModifiedBoard() {
@@ -272,25 +306,55 @@ export function BattleShipSetupBoard({
   useEffect(() => {
     const context = canvasRef.current?.getContext('2d');
     if (context === null || context === undefined) return;
-    // Add resource paths for ships here when available.
     async function waitForImages() {
+      destroyerVertical.src = RESOURCE_PATH + '/assets/BattleShip/destroyer_vertical.png';
+      destroyerHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/destroyer_horizontal.png';
+      submarineVertical.src = RESOURCE_PATH + '/assets/BattleShip/submarine_vertical.png';
+      submarineHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/submarine_horizontal.png';
+      cruiserVertical.src = RESOURCE_PATH + '/assets/BattleShip/cruiser_vertical.png';
+      cruiserHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/cruiser_horizontal.png';
+      battleshipVertical.src = RESOURCE_PATH + '/assets/BattleShip/battleship_vertical.png';
+      battleshipHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/battleship_horizontal.png';
+      carrierVertical.src = RESOURCE_PATH + '/assets/BattleShip/carrier_vertical.png';
+      carrierHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/carrier_horizontal.png';
       // This compact way of waiting for the images to load was created using the following link as a reference:
       // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#creating_images_from_scratch
-      /*await*/ Promise.all(
-        [new Image() /* Image states go here when available.*/].map(
-          image => new Promise(resolve => image.addEventListener('load', resolve)),
-        ),
+      await Promise.all(
+        [
+          destroyerVertical,
+          destroyerHorizontal,
+          submarineVertical,
+          submarineHorizontal,
+          cruiserVertical,
+          cruiserHorizontal,
+          battleshipVertical,
+          battleshipHorizontal,
+          carrierVertical,
+          carrierHorizontal,
+        ].map(image => new Promise(resolve => image.addEventListener('load', resolve))),
       );
       // Render initial squares
       for (let i = -3; i < 13; i++) for (let j = 0; j < 10; j++) restoreCell(i, j);
       // Render initial ships
       for (const ship of ships) {
-        // Set sprite for ship when available.
         ship.draw();
       }
     }
     waitForImages();
-  }, [restoreCell, ships]);
+  }, [
+    battleshipHorizontal,
+    battleshipVertical,
+    carrierHorizontal,
+    carrierVertical,
+    cruiserHorizontal,
+    cruiserVertical,
+    destroyerHorizontal,
+    destroyerVertical,
+    restoreCell,
+    ships,
+    submarineHorizontal,
+    submarineVertical,
+  ]);
   return (
     <canvas
       ref={canvasRef}

@@ -35,6 +35,16 @@ export function BattleShipBoard({
   onCellClick = () => {},
 }: BattleShipBoardProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [destroyerVertical] = useState<HTMLImageElement>(new Image());
+  const [destroyerHorizontal] = useState<HTMLImageElement>(new Image());
+  const [submarineVertical] = useState<HTMLImageElement>(new Image());
+  const [submarineHorizontal] = useState<HTMLImageElement>(new Image());
+  const [cruiserVertical] = useState<HTMLImageElement>(new Image());
+  const [cruiserHorizontal] = useState<HTMLImageElement>(new Image());
+  const [battleshipVertical] = useState<HTMLImageElement>(new Image());
+  const [battleshipHorizontal] = useState<HTMLImageElement>(new Image());
+  const [carrierVertical] = useState<HTMLImageElement>(new Image());
+  const [carrierHorizontal] = useState<HTMLImageElement>(new Image());
   const [hitMarker] = useState<HTMLImageElement>(new Image());
   const [missMarker] = useState<HTMLImageElement>(new Image());
 
@@ -66,13 +76,67 @@ export function BattleShipBoard({
         context.fillRect(i * cellWidth, j * cellWidth, cellWidth, cellWidth);
       }
     // Render middle layer: ship sprites
-    // Note that this is pretty much going to completely change due to not having the sprites yet.
     if (displayInitialBoard && initialBoard.length === 10) {
-      context.fillStyle = 'black';
+      const missingShips: BattleShipBoardPiece[] = [
+        'Destroyer',
+        'Submarine',
+        'Cruiser',
+        'Battleship',
+        'Carrier',
+      ];
+      const shipSizes = new Map<BattleShipBoardPiece, number>([
+        ['Destroyer', 2],
+        ['Submarine', 3],
+        ['Cruiser', 3],
+        ['Battleship', 4],
+        ['Carrier', 5],
+      ]);
       for (let i = 0; i < 10; i++)
         for (let j = 0; j < 10; j++) {
-          if (initialBoard[i][j])
-            context.fillRect(i * cellWidth, j * cellWidth, cellWidth, cellWidth);
+          if (initialBoard[i][j] && missingShips.includes(initialBoard[i][j])) {
+            let verticalImage = destroyerVertical;
+            let horizontalImage = destroyerHorizontal;
+            const ship = initialBoard[i][j];
+            const shipLength = shipSizes.get(ship) ?? 0;
+            switch (ship) {
+              case 'Submarine':
+                verticalImage = submarineVertical;
+                horizontalImage = submarineHorizontal;
+                break;
+              case 'Cruiser':
+                verticalImage = cruiserVertical;
+                horizontalImage = cruiserHorizontal;
+                break;
+              case 'Battleship':
+                verticalImage = battleshipVertical;
+                horizontalImage = battleshipHorizontal;
+                break;
+              case 'Carrier':
+                verticalImage = carrierVertical;
+                horizontalImage = carrierHorizontal;
+                break;
+            }
+            if (j + 1 < 10 && initialBoard[i][j + 1] === ship)
+              context.drawImage(
+                verticalImage,
+                i * cellWidth,
+                j * cellWidth,
+                cellWidth,
+                cellWidth * shipLength,
+              );
+            else
+              context.drawImage(
+                horizontalImage,
+                i * cellWidth,
+                j * cellWidth,
+                cellWidth * shipLength,
+                cellWidth,
+              );
+            missingShips.splice(
+              missingShips.findIndex(value => value === ship),
+              1,
+            );
+          }
         }
     }
     // Render top layer: markers
@@ -84,25 +148,77 @@ export function BattleShipBoard({
           else if (markerBoard[i][j] === 'M')
             context.drawImage(missMarker, i * cellWidth, j * cellWidth, cellWidth, cellWidth);
         }
-  }, [displayInitialBoard, hitMarker, initialBoard, markerBoard, missMarker, width]);
+  }, [
+    battleshipHorizontal,
+    battleshipVertical,
+    carrierHorizontal,
+    carrierVertical,
+    cruiserHorizontal,
+    cruiserVertical,
+    destroyerHorizontal,
+    destroyerVertical,
+    displayInitialBoard,
+    hitMarker,
+    initialBoard,
+    markerBoard,
+    missMarker,
+    submarineHorizontal,
+    submarineVertical,
+    width,
+  ]);
 
   useEffect(() => {
     const context = canvasRef.current?.getContext('2d');
     if (context === null || context === undefined) return;
+    destroyerVertical.src = RESOURCE_PATH + '/assets/BattleShip/destroyer_vertical.png';
+    destroyerHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/destroyer_horizontal.png';
+    submarineVertical.src = RESOURCE_PATH + '/assets/BattleShip/submarine_vertical.png';
+    submarineHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/submarine_horizontal.png';
+    cruiserVertical.src = RESOURCE_PATH + '/assets/BattleShip/cruiser_vertical.png';
+    cruiserHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/cruiser_horizontal.png';
+    battleshipVertical.src = RESOURCE_PATH + '/assets/BattleShip/battleship_vertical.png';
+    battleshipHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/battleship_horizontal.png';
+    carrierVertical.src = RESOURCE_PATH + '/assets/BattleShip/carrier_vertical.png';
+    carrierHorizontal.src = RESOURCE_PATH + '/assets/BattleShip/carrier_horizontal.png';
     hitMarker.src = RESOURCE_PATH + '/assets/BattleShip/hit.svg';
     missMarker.src = RESOURCE_PATH + '/assets/BattleShip/miss.svg';
     async function waitForImages() {
       // This compact way of waiting for the images to load was created using the following link as a reference:
       // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#creating_images_from_scratch
       await Promise.all(
-        [hitMarker, missMarker].map(
-          image => new Promise(resolve => image.addEventListener('load', resolve)),
-        ),
+        [
+          destroyerVertical,
+          destroyerHorizontal,
+          submarineVertical,
+          submarineHorizontal,
+          cruiserVertical,
+          cruiserHorizontal,
+          battleshipVertical,
+          battleshipHorizontal,
+          carrierVertical,
+          carrierHorizontal,
+          hitMarker,
+          missMarker,
+        ].map(image => new Promise(resolve => image.addEventListener('load', resolve))),
       );
       renderBoard();
     }
     waitForImages();
-  }, [hitMarker, renderBoard, missMarker]);
+  }, [
+    battleshipHorizontal,
+    battleshipVertical,
+    carrierHorizontal,
+    carrierVertical,
+    cruiserHorizontal,
+    cruiserVertical,
+    destroyerHorizontal,
+    destroyerVertical,
+    hitMarker,
+    missMarker,
+    renderBoard,
+    submarineHorizontal,
+    submarineVertical,
+  ]);
   return (
     <canvas
       ref={canvasRef}
