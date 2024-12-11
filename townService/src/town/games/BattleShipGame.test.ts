@@ -17,6 +17,66 @@ import Player from '../../lib/Player';
 
 describe('[T1] BattleShipGame', () => {
   let game: BattleShipGame;
+  function placeShip(
+    board: BattleShipBoardPiece[][],
+    ship: BattleShipBoardPiece,
+    pos: number,
+    orntDown: boolean,
+  ) {
+    let xPos = Math.floor(Math.abs(pos % 10));
+    let yPos = Math.floor(Math.abs((pos / 10) % 10));
+    let i;
+    let g = 5;
+    if (ship === 'Battleship') {
+      g = 4;
+    } else if (ship === 'Cruiser' || ship === 'Submarine') {
+      g = 3;
+    } else if (ship === 'Destroyer') {
+      g = 2;
+    }
+    for (i = 0; i < g; i++) {
+      if (orntDown) {
+        if (yPos > 9) {
+          throw new Error(`${yPos} Not a valid postion`);
+        }
+        if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
+          throw new Error(`${pos} Postion Conflict`);
+        }
+        board[yPos][xPos] = ship;
+        yPos++;
+      } else {
+        if (xPos > 9) {
+          throw new Error(`${xPos} Not a valid postion`);
+        }
+        if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
+          throw new Error(`${pos} Postion Conflict`);
+        }
+        board[yPos][xPos] = ship;
+        xPos++;
+      }
+    }
+  }
+
+  function generateSetupBoard(
+    carPos: number,
+    carOrnt: boolean,
+    batPos: number,
+    batOrnt: boolean,
+    cruPos: number,
+    cruOrnt: boolean,
+    subPos: number,
+    subOrnt: boolean,
+    desPos: number,
+    desOrnt: boolean,
+  ) {
+    const retBoard: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
+    placeShip(retBoard, 'Carrier', carPos, carOrnt);
+    placeShip(retBoard, 'Battleship', batPos, batOrnt);
+    placeShip(retBoard, 'Cruiser', cruPos, cruOrnt);
+    placeShip(retBoard, 'Submarine', subPos, subOrnt);
+    placeShip(retBoard, 'Destroyer', desPos, desOrnt);
+    return retBoard;
+  }
 
   beforeEach(() => {
     game = new BattleShipGame();
@@ -129,128 +189,18 @@ describe('[T1] BattleShipGame', () => {
       describe('when the game is in the main gameplay stage, it should end the game and set the remaining player as the winner', () => {
         const player1 = createPlayerForTesting();
         const player2 = createPlayerForTesting();
-        const validBoard: BattleShipBoardPiece[][] = [
-          [
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'Destroyer',
-          ],
-          [
-            undefined,
-            'Carrier',
-            undefined,
-            undefined,
-            undefined,
-            'Submarine',
-            'Submarine',
-            'Submarine',
-            undefined,
-            'Destroyer',
-          ],
-          [
-            undefined,
-            'Carrier',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            'Carrier',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            'Carrier',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'Cruiser',
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            'Carrier',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'Cruiser',
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'Cruiser',
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            'Battleship',
-            'Battleship',
-            'Battleship',
-            'Battleship',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-          [
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-        ];
+        const validBoard: BattleShipBoardPiece[][] = generateSetupBoard(
+          11,
+          true,
+          80,
+          false,
+          46,
+          true,
+          15,
+          false,
+          9,
+          true,
+        );
         beforeEach(() => {
           game.join(player1);
           game.join(player2);
@@ -298,67 +248,6 @@ describe('[T1] BattleShipGame', () => {
   });
 
   describe('[T1.3] _applyMove', () => {
-    function placeShip(
-      board: BattleShipBoardPiece[][],
-      ship: BattleShipBoardPiece,
-      pos: number,
-      orntDown: boolean,
-    ) {
-      let xPos = Math.floor(Math.abs(pos % 10));
-      let yPos = Math.floor(Math.abs((pos / 10) % 10));
-      let i;
-      let g = 5;
-      if (ship === 'Battleship') {
-        g = 4;
-      } else if (ship === 'Cruiser' || ship === 'Submarine') {
-        g = 3;
-      } else if (ship === 'Destroyer') {
-        g = 2;
-      }
-      for (i = 0; i < g; i++) {
-        if (orntDown) {
-          if (yPos > 9) {
-            throw new Error(`${yPos} Not a valid postion`);
-          }
-          if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
-            throw new Error(`${pos} Postion Conflict`);
-          }
-          board[yPos][xPos] = ship;
-          yPos++;
-        } else {
-          if (xPos > 9) {
-            throw new Error(`${xPos} Not a valid postion`);
-          }
-          if (board[yPos][xPos] !== undefined && board[yPos][xPos] !== null) {
-            throw new Error(`${pos} Postion Conflict`);
-          }
-          board[yPos][xPos] = ship;
-          xPos++;
-        }
-      }
-    }
-
-    function generateSetupBoard(
-      carPos: number,
-      carOrnt: boolean,
-      batPos: number,
-      batOrnt: boolean,
-      cruPos: number,
-      cruOrnt: boolean,
-      subPos: number,
-      subOrnt: boolean,
-      desPos: number,
-      desOrnt: boolean,
-    ) {
-      const retBoard: BattleShipBoardPiece[][] = [[], [], [], [], [], [], [], [], [], []];
-      placeShip(retBoard, 'Carrier', carPos, carOrnt);
-      placeShip(retBoard, 'Battleship', batPos, batOrnt);
-      placeShip(retBoard, 'Cruiser', cruPos, cruOrnt);
-      placeShip(retBoard, 'Submarine', subPos, subOrnt);
-      placeShip(retBoard, 'Destroyer', desPos, desOrnt);
-      return retBoard;
-    }
-
     describe('_applySetupMove', () => {
       describe('when given an setup move before game start', () => {
         it('should throw a GAME_NOT_IN_PROGRESS_MESSAGE error', () => {
