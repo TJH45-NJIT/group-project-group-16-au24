@@ -99,7 +99,7 @@ export default abstract class InteractableAreaController<
       newOccupants.length !== this._occupants.length ||
       _.xor(newOccupants, this._occupants).length > 0
     ) {
-      //TODO - Bounty for figuring out how to make the types work here
+      //TODO - Bounty for figuring out how to make the types work here (a cast that should work doesn't work due to a false positive)
       //eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.emit('occupantsChange', newOccupants);
