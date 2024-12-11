@@ -8,6 +8,7 @@ import {
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  GameInstance,
   GameInstanceID,
   BattleShipGameState,
   BattleShipMove,
@@ -49,6 +50,7 @@ class TestingGame extends Game<BattleShipGameState, BattleShipMove> {
   public endGame(winner?: string) {
     this.state = {
       ...this.state,
+      internalState: 'GAME_END',
       status: 'OVER',
       winner,
     };
@@ -404,8 +406,38 @@ describe('[T2] BattleShipGameArea', () => {
           gameArea.handleCommand({ type: 'GameMove', move, gameID }, player1);
           expect(game.state.status).toEqual('OVER');
           gameArea.handleCommand({ type: 'NewGame', prevgameID: gameID }, player1);
-          expect(gameArea.gameHistory.length).toEqual(1);
-          expect(gameArea.gameHistory[0].state.winner).toEqual(player1.id);
+          expect(gameArea.handleCommand({ type: 'GetHistory' }, player1)).toEqual({
+            gameHistory: [{
+                id: game.id,
+                players: [player1.id, player2.id],
+                result: {
+                  gameID: game.id,
+                  scores: { 'Player 1': 0, 'Player 2': 0 },
+                },
+                state: {
+                  internalState: 'GAME_END',
+                  lastMoveHit: false,
+                  lastShipHit: undefined,
+                  moves: [],
+                  p1: player1.id,
+                  p1Board: [[], [], [], [], [], [], [], [], [], []],
+                  p1InitialBoard: [],
+                  p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+                  p1SunkenShips: [],
+                  p1Username: 'Player 1',
+                  p2: player2.id,
+                  p2Board: [[], [], [], [], [], [], [], [], [], []],
+                  p2InitialBoard: [],
+                  p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+                  p2SunkenShips: [],
+                  p2Username: 'Player 2',
+                  status: 'OVER',
+                  turnPlayer: undefined,
+                  winner: player1.id,
+                },
+              },
+            ],
+          });
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(2);
         });
         test('when player 2 wins', () => {
@@ -416,13 +448,42 @@ describe('[T2] BattleShipGameArea', () => {
           gameArea.handleCommand({ type: 'GameMove', move, gameID }, player2);
           expect(game.state.status).toEqual('OVER');
           gameArea.handleCommand({ type: 'NewGame', prevgameID: gameID }, player2);
-          expect(gameArea.gameHistory.length).toEqual(1);
-          expect(gameArea.gameHistory[0].state.winner).toEqual(player2.id);
+          expect(gameArea.handleCommand({ type: 'GetHistory' }, player1)).toEqual({
+            gameHistory: [{
+                id: game.id,
+                players: [player1.id, player2.id],
+                result: {
+                  gameID: game.id,
+                  scores: { 'Player 1': 0, 'Player 2': 0 },
+                },
+                state: {
+                  internalState: 'GAME_END',
+                  lastMoveHit: false,
+                  lastShipHit: undefined,
+                  moves: [],
+                  p1: player1.id,
+                  p1Board: [[], [], [], [], [], [], [], [], [], []],
+                  p1InitialBoard: [],
+                  p1MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+                  p1SunkenShips: [],
+                  p1Username: 'Player 1',
+                  p2: player2.id,
+                  p2Board: [[], [], [], [], [], [], [], [], [], []],
+                  p2InitialBoard: [],
+                  p2MarkerBoard: [[], [], [], [], [], [], [], [], [], []],
+                  p2SunkenShips: [],
+                  p2Username: 'Player 2',
+                  status: 'OVER',
+                  turnPlayer: undefined,
+                  winner: player2.id,
+                },
+              },
+            ],
+          });
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(2);
         });
       });
     });
-    // Make Changes
     describe('[T3.4] when given a LeaveGame command', () => {
       describe('when there is no game in progress', () => {
         it('should throw an error', () => {
@@ -469,7 +530,7 @@ describe('[T2] BattleShipGameArea', () => {
         });
       });
     });
-    describe('[T3.4] when given an invalid command', () => {
+    describe('[T3.5] when given an invalid command', () => {
       it('should throw an error', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore (Testing an invalid command, only possible at the boundary of the type system)
