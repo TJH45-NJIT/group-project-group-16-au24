@@ -1,3 +1,7 @@
+# Project Context
+
+This section of the README was added after the final version of the project was submitted and is specifically meant for the public fork of the project. See [the pull request that adds this message](https://github.com/TJH45-NJIT/group-project-group-16-au24/pull/1) for more information.
+
 # Covey.Town
 
 Covey.Town provides a virtual meeting space where different groups of people can have simultaneous video calls, allowing participants to drift between different conversations, just like in real life.
